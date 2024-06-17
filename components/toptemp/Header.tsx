@@ -8,7 +8,7 @@ import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 const Header = () => {
   return (
     <header className="w-full border-b">
-      <div className="wrapper flex bg-hero-img bg-cover items-center justify-between">
+      <div className="wrapper flex bg-cover items-center justify-between">
         <Link href="/" className="w-36">
           <Image
             src="/images/easy-icon.png"

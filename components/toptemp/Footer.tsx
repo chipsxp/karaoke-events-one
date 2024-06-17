@@ -4,7 +4,7 @@ import Link from "next/link";
 const Footer = () => {
   return (
     <footer className="border-t-2">
-      <div className="flex-center bg-hero-img wrapper flex-between flex flex-col gap-4 p-5 text-center sm:flex-row">
+      <div className="flex-center wrapper flex-between flex flex-col gap-4 p-5 text-center sm:flex-row">
         <Link href="/">
           Karaoke Events
           <Image
