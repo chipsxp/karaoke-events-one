@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// Add Sales catch and click here with images
 const Footer = () => {
   return (
     <footer className="border-t-2">

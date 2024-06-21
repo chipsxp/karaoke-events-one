@@ -2,6 +2,8 @@
 import { headerLinks } from "@/constants";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+// hearderLinks map from constants index to Header and MobileNav
 const NavItems = () => {
   const pathname = usePathname();
   return (
@@ -23,4 +25,5 @@ const NavItems = () => {
   );
 };
 
+//
 export default NavItems;

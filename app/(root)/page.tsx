@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
+// Home Splash Page (landing root) section.
+// Place bg-dotted-pattern image in className
 export default function Home() {
   return (
     <>

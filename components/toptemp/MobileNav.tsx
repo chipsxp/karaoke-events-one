@@ -10,10 +10,12 @@ import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import NavItems from "@/components/toptemp/NavItems";
 
+// MobileNav is shown on mobile only, hidden on greater 768px screen
 const MobileNav = () => {
   return (
     <nav className="md:hidden">
       <Sheet>
+        {/* Trigger to only show Mobile Menu */}
         <SheetTrigger className="align-middle">
           <Image
             src="/images/menu.svg"
@@ -23,7 +25,7 @@ const MobileNav = () => {
             className="cursor-pointer"
           />
         </SheetTrigger>
-
+        {/* Content for Mobile Menu */}
         <SheetContent className="flex flex-col gap-6 bg-slate-100 md:hidden">
           <SheetHeader className="flex items-center gap-2">
             <SheetTitle className="md:hidden bg-slate-100">

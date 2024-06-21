@@ -1,3 +1,4 @@
+// navigation links map for Unordered List in NavItems
 export const headerLinks = [
   {
     label: "Home",
@@ -12,7 +13,7 @@ export const headerLinks = [
     route: "/profile",
   },
 ];
-
+// Template model for Events Card Display
 export const eventDefaultValues = {
   title: "",
   description: "",
@@ -24,4 +25,7 @@ export const eventDefaultValues = {
   price: "",
   isFree: false,
   url: "",
+  tickets: 0,
+  organizerId: "",
+  hostId: "",
 };

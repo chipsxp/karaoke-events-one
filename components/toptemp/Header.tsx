@@ -5,6 +5,7 @@ import NavItems from "@/components/toptemp/NavItems";
 import MobileNav from "@/components/toptemp/MobileNav";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
+// Add bg-hero-image here in ClassName
 const Header = () => {
   return (
     <header className="w-full border-b">
@@ -17,11 +18,11 @@ const Header = () => {
             alt="Easy-events logo"
           />
         </Link>
-
+        {/* Wide Screen Navigation */}
         <nav className="md:flex-between hidden w-full max-w-xs">
           <NavItems />
         </nav>
-
+        {/* Clerk Auth Navigation with Mobile Navigation */}
         <div className="flex w-32 justify-end gap-3">
           <SignedIn>
             <UserButton afterSignOutUrl="/" />
