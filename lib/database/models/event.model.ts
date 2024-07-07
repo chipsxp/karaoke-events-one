@@ -15,8 +15,8 @@ export interface IEvent {
   isFree: boolean;
   eventUrl: string;
   category: { _id: string; name: string };
-  organizer: { _id: string; promoterId: string };
-  host: { _id: string; firstName: string; lastName: string };
+  organizer: { _id: string; firstName: string; lastName: string; isPromoter: boolean };
+  host: { _id: string; firstName: string; lastName: string; isHost: boolean };
 }
 
 // note: modify enddatetime with additional 1 day

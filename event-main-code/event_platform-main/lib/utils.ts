@@ -1,14 +1,10 @@
-//Standard Shadcn import setup
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
 
-// Query stringify setup
+import { twMerge } from "tailwind-merge";
 import qs from "query-string";
 
-// import this types from @type/index.ts
 import { UrlQueryParams, RemoveUrlQueryParams } from "@/types";
 
-// Tailwind Combine Classes
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
