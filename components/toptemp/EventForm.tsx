@@ -22,7 +22,7 @@ import { FileUploader } from "@/components/toptemp/FileUploader";
 import { useState } from "react";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
-import { useUploadThing } from "@/lib/uploadthing";
+import { useUploadThing } from "@/utils/uploadthing";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox";
@@ -53,7 +53,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: initialValues,
+    defaultValues: {
+      [`${initialValues}`]: initialValues,
+    },
   });
 
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
@@ -232,7 +234,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                     </p>
                     <DatePicker
                       selected={field.value}
-                      onChange={(date: Date) => field.onChange(date)}
+                      onChange={(date: Date | null) => field.onChange(date)}
                       showTimeSelect
                       timeInputLabel="Time:"
                       dateFormat="MM/dd/yyyy h:mm aa"
@@ -264,7 +266,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                     </p>
                     <DatePicker
                       selected={field.value}
-                      onChange={(date: Date) => field.onChange(date)}
+                      onChange={(date: Date | null) => field.onChange(date)}
                       showTimeSelect
                       timeInputLabel="Time:"
                       dateFormat="MM/dd/yyyy h:mm aa"
