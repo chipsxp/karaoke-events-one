@@ -73,6 +73,7 @@ export const config: Config = withUt({
       backgroundImage: {
         "dotted-pattern": "url('/images/dotted-pattern.png')",
         "hero-img": "url('/images/hero.jpg')",
+        "party-event": "url('/images/star-fling_crowd_cheering.png')",
       },
       borderRadius: {
         lg: "var(--radius)",
