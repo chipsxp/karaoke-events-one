@@ -1,13 +1,14 @@
+
 "use client"
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react'
 import { Input } from '../ui/input';
 import { formUrlQuery, removeKeysFromQuery } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) => {
+import { Search as SearchIcon, X } from 'lucide-react';
+const Search = ({ placeholder = 'Search events...' }: { placeholder?: string }) => {
   const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -34,17 +35,48 @@ const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) =
     return () => clearTimeout(delayDebounceFn);
   }, [query, searchParams, router])
 
+  const clearSearch = () => {
+    setQuery('');
+    const newUrl = removeKeysFromQuery({
+      params: searchParams.toString(),
+      keysToRemove: ['query']
+    });
+    router.push(newUrl, { scroll: false });
+  };
+
   return (
-    <div className="flex-center min-h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-      <Image src="/assets/icons/search.svg" alt="search" width={24} height={24} />
-      <Input 
+    <div
+      className={`relative flex-center min-h-[56px] w-full overflow-hidden rounded-full bg-white border-2 transition-all duration-300 ${
+        isFocused ? 'border-purple-500 shadow-lg shadow-purple-500/20 scale-102' : 'border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      <div className="flex-center pl-4 pr-2">
+        <SearchIcon className={`h-5 w-5 transition-colors ${
+          isFocused ? 'text-purple-500' : 'text-gray-400'
+        }`} />
+      </div>
+
+      <Input
         type="text"
         placeholder={placeholder}
+        value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-regular-16 border-0 bg-grey-50 outline-offset-0 placeholder:text-grey-500 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className="flex-1 border-0 bg-transparent outline-offset-0 placeholder:text-gray-400 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-100 pr-10"
       />
+
+      {query && (
+        <button
+          onClick={clearSearch}
+          className="absolute right-3 p-1 text-gray-100 hover:text-gray-400 transition-colors"
+          aria-label="Clear search"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }
 
-export default Search
+export default Search;

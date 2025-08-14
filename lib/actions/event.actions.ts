@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { connectToDatabase } from "@/lib/database";
 import Event from "@/lib/database/models/event.model";
+import EventRegistration from "@/lib/database/models/eventRegistration.model";
 import User from "@/lib/database/models/user.model";
 import Category from "@/lib/database/models/category.model";
 import { handleError } from "@/lib/utils";
@@ -36,13 +37,14 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase();
 
-    const organizer = await User.findById(userId);
+    const organizer = await User.findOne({ clerkId: userId });
     if (!organizer) throw new Error("Organizer not found");
 
     const newEvent = await Event.create({
       ...event,
       category: event.categoryId,
-      organizer: userId,
+      organizer: organizer._id,
+      host: organizer._id,
     });
     revalidatePath(path);
 
@@ -72,8 +74,11 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
     await connectToDatabase();
 
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) throw new Error("User not found");
+
     const eventToUpdate = await Event.findById(event._id);
-    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
+    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== user._id.toHexString()) {
       throw new Error("Unauthorized or event not found");
     }
 
@@ -152,7 +157,16 @@ export async function getEventsByUser({
   try {
     await connectToDatabase();
 
-    const conditions = { organizer: userId };
+    // Find the user by clerkId to get the MongoDB ObjectId
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      return {
+        data: [],
+        totalPages: 0,
+      };
+    }
+
+    const conditions = { organizer: user._id };
     const skipAmount = (page - 1) * limit;
 
     const eventsQuery = Event.find(conditions)
@@ -199,6 +213,98 @@ export async function getRelatedEventsByCategory({
       data: JSON.parse(JSON.stringify(events)),
       totalPages: Math.ceil(eventsCount / limit),
     };
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// GET EVENTS BY HOST (KJ Dashboard)
+export async function getEventsByHost(hostId: string) {
+  try {
+    await connectToDatabase();
+
+    const events = await populateEvent(Event.find({ host: hostId }))
+      .sort({ createdAt: -1 });
+
+    return JSON.parse(JSON.stringify(events));
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// GET EVENTS WITH REGISTRATION DETAILS (KJ Dashboard)
+export async function getEventsWithRegistrations(hostId: string) {
+  try {
+    await connectToDatabase();
+
+    const events = await Event.find({ host: hostId })
+      .populate({
+        path: 'category',
+        model: Category,
+        select: '_id name'
+      })
+      .populate({
+        path: 'host',
+        model: User,
+        select: '_id firstName lastName'
+      })
+      .sort({ startDateTime: 1 });
+
+    // Get registration stats for each event
+    const eventsWithStats = await Promise.all(
+      events.map(async (event) => {
+        const stats = await EventRegistration.aggregate([
+          { $match: { eventId: event._id.toString() } },
+          {
+            $group: {
+              _id: null,
+              totalInterested: {
+                $sum: { $cond: [{ $eq: ['$registrationType', 'interested'] }, 1, 0] }
+              },
+              totalRegistered: {
+                $sum: { $cond: [{ $eq: ['$registrationType', 'registered'] }, 1, 0] }
+              },
+              totalPending: {
+                $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
+              },
+              totalApproved: {
+                $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] }
+              },
+            }
+          }
+        ]);
+
+        return {
+          ...JSON.parse(JSON.stringify(event)),
+          stats: stats[0] || {
+            totalInterested: 0,
+            totalRegistered: 0,
+            totalPending: 0,
+            totalApproved: 0
+          }
+        };
+      })
+    );
+
+    return eventsWithStats;
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// UPDATE EVENT STATUS
+export async function updateEventStatus(eventId: string, status: 'draft' | 'published' | 'cancelled' | 'completed') {
+  try {
+    await connectToDatabase();
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      eventId,
+      { status },
+      { new: true }
+    );
+
+    revalidatePath('/');
+    return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
     handleError(error);
   }

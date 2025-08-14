@@ -1,9 +1,15 @@
 import { SignIn } from "@clerk/nextjs";
 
-export default function LoginUser() {
+const SignInPage = () => {
   return (
-    <div className="flex-center bg-yellow-400 border-dashed">
-      <SignIn />
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+      <SignIn
+        routing="path"
+        path="/sign-in"
+        forceRedirectUrl="/dashboard"
+      />
     </div>
   );
-}
+};
+
+export default SignInPage;

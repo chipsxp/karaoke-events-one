@@ -18,17 +18,17 @@ const MobileNav = () => {
         {/* Trigger to only show Mobile Menu */}
         <SheetTrigger className="align-middle">
           <Image
-            src="/images/menu.svg"
+            src="/images/menu-white.svg"
             alt="mobilemenu"
-            width={24}
-            height={24}
-            className="cursor-pointer"
+            width={29}
+            height={29}
+            className="cursor-pointer transition-transform duration-300 hover:scale-110"
           />
         </SheetTrigger>
         {/* Content for Mobile Menu */}
-        <SheetContent className="flex flex-col gap-6 bg-slate-100 md:hidden">
+        <SheetContent className="flex flex-col gap-6 bg-black text-white md:hidden animate-slide-in-left">
           <SheetHeader className="flex items-center gap-2">
-            <SheetTitle className="md:hidden bg-slate-100">
+            <SheetTitle className="md:hidden text-white">
               Mobile Menu
             </SheetTitle>
             <Image
@@ -36,11 +36,12 @@ const MobileNav = () => {
               alt="Easy-events logo"
               width={50}
               height={50}
+              className="animate-pulse-slow"
             />
-            <SheetDescription className="md:hidden bg-slate-100">
+            <SheetDescription className="md:hidden text-gray-300">
               Karaoke-Events
             </SheetDescription>
-            <Separator className="border border-black-50" />
+            <Separator className="border border-gray-700" />
             <NavItems />
           </SheetHeader>
         </SheetContent>

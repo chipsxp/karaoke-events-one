@@ -1,10 +1,21 @@
 import EventForm from "@/components/toptemp/EventForm";
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getUserById } from "@/lib/actions/user.actions";
 
-const CreateEvent = () => {
-  const { sessionClaims } = auth();
+const CreateEvent = async () => {
+  const { userId } = auth();
 
-  const userId = sessionClaims?.userId as string;
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const dbUser = await getUserById(userId);
+
+  // If user doesn't exist or role is not KJ, redirect to dashboard
+  if (!dbUser || dbUser.role !== "KJ") {
+    redirect("/dashboard");
+  }
 
   return (
     <>

@@ -28,4 +28,6 @@ export const eventDefaultValues = {
   tickets: 0,
   organizerId: "",
   hostId: "",
+  capacity: 50,
+  autoApprove: false,
 };

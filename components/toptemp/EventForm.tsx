@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -42,9 +40,18 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const initialValues =
     event && type === "Update"
       ? {
-          ...event,
+          title: event.title,
+          description: event.description,
+          location: event.location,
+          imageUrl: event.imageUrl,
           startDateTime: new Date(event.startDateTime),
           endDateTime: new Date(event.endDateTime),
+          categoryId: event.category._id,
+          price: event.price.toString(),
+          isFree: event.isFree,
+          url: event.eventUrl || "",
+          capacity: event.capacity,
+          autoApprove: event.autoApprove,
         }
       : eventDefaultValues;
   const router = useRouter();
@@ -53,9 +60,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: {
-      [`${initialValues}`]: initialValues,
-    },
+    defaultValues: initialValues,
   });
 
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
@@ -334,6 +339,35 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           />
           <FormField
             control={form.control}
+            name="capacity"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                    <Image
+                      src="/assets/icons/user.svg"
+                      alt="capacity"
+                      width={24}
+                      height={24}
+                      className="filter-grey"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Capacity"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
             name="url"
             render={({ field }) => (
               <FormItem className="w-full">
@@ -351,6 +385,31 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                       {...field}
                       className="input-field"
                     />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="autoApprove"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  <div className="flex items-center space-x-3 px-4 py-2 rounded-full bg-grey-50 h-[54px]">
+                    <Checkbox
+                      id="autoApprove"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="h-5 w-5 border-2 border-primary-500"
+                    />
+                    <label
+                      htmlFor="autoApprove"
+                      className="whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Auto Approve
+                    </label>
                   </div>
                 </FormControl>
                 <FormMessage />

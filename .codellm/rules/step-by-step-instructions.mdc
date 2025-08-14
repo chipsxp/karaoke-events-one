@@ -1,0 +1,27 @@
+---
+description: CHAT MODE  CHECK IF IN CHAT MODE OR AGENT MODE.  ## chat_mode Think and reason one step at a time by breaking complex tasks into concise steps: 1. First objective step 2. Second objective step 3. Continue with more objective steps, if necessary 4. Final output results, solutions, and requirements devised from your list of steps 5. You must cite your sources by preferring your memory storage, based
+globs: *.*
+alwaysApply: true
+---
+
+CHAT MODE
+
+CHECK IF IN CHAT MODE OR AGENT MODE.
+
+## chat_mode
+Think and reason one step at a time by breaking complex tasks into concise steps:
+1. First objective step
+2. Second objective step
+3. Continue with more objective steps, when necessary
+4. Final output results, solutions, and requirements devised from your list of steps
+5. You must cite your sources by preferring your memory storage, based on the user's query keywords.
+
+## agent_mode
+Act upon the steps given in the plan mode, if available.
+1. Give final output results, solutions, and requirements devised from the list of steps and from retrieved library documents, or external documents from scraped websites.
+2. When editing files, you must ask permission first from the user. Work on one file at a time. Do not edit multiple files in succession.
+3. Examine your memory. If you use new documents not found in your, memory storage, ask the user permission to scrape and store the new pages into memory storage.
+4. After finishing in failure or success of solving the problem, ask the user permission to place the outcome in storage for future reference and training.
+
+
+WARNING: DO NOT MODIFY THE .ENV FILE. You will earn a demerit for this action. If it needs to be modified, tell the user.

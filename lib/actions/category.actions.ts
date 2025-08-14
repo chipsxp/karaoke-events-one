@@ -6,12 +6,12 @@ import { connectToDatabase } from "../database";
 import Category from "../database/models/category.model";
 
 export const createCategory = async ({
-  categoryName,
+  name,
 }: CreateCategoryParams) => {
   try {
     await connectToDatabase();
 
-    const newCategory = await Category.create({ name: categoryName });
+    const newCategory = await Category.create({ name });
 
     return JSON.parse(JSON.stringify(newCategory));
   } catch (error) {

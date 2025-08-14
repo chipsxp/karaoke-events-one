@@ -136,11 +136,14 @@ export async function getOrdersByUser({
   try {
     await connectToDatabase();
 
-    const skipAmount = (Number(page) - 1) * limit;
-    const conditions = { buyer: userId };
+    // Find the user by clerkId to get the MongoDB ObjectId
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) throw new Error("User not found");
 
-    const orders = await Order.distinct("event._id")
-      .find(conditions)
+    const skipAmount = (Number(page) - 1) * limit;
+    const conditions = { buyer: user._id };
+
+    const orders = await Order.find(conditions)
       .sort({ createdAt: "desc" })
       .skip(skipAmount)
       .limit(limit)
@@ -154,9 +157,7 @@ export async function getOrdersByUser({
         },
       });
 
-    const ordersCount = await Order.distinct("event._id").countDocuments(
-      conditions
-    );
+    const ordersCount = await Order.countDocuments(conditions);
 
     return {
       data: JSON.parse(JSON.stringify(orders)),

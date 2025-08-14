@@ -21,8 +21,8 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
       ) : (
         <>
           <SignedOut>
-            <Button asChild className="button rounded-full" size="lg">
-              <Link href="/sign-in">Get Tickets</Link>
+            <Button onClick={() => window.location.href = "/sign-in"} className="button rounded-full" size="lg">
+              Get Tickets
             </Button>
           </SignedOut>
 

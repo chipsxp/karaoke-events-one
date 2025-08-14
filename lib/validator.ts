@@ -17,4 +17,6 @@ export const eventFormSchema = z.object({
   price: z.string(),
   isFree: z.boolean(),
   url: z.string().url(),
+  capacity: z.number().min(1, "Capacity must be at least 1"),
+  autoApprove: z.boolean().default(false),
 });
