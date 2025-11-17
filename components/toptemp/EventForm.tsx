@@ -19,10 +19,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "@/components/toptemp/FileUploader";
 import { useState } from "react";
 import Image from "next/image";
+import {
+  MapPin,
+  Calendar,
+  DollarSign,
+  User,
+  Link as LinkIcon,
+} from "lucide-react";
 import DatePicker from "react-datepicker";
-import { useUploadThing } from "@/utils/uploadthing";
 
-import "react-datepicker/dist/react-datepicker.css";
+import { useUploadThing } from "@/utils/uploadthing";
 import { Checkbox } from "../ui/checkbox";
 import { useRouter } from "next/navigation";
 import { createEvent, updateEvent } from "@/lib/actions/event.actions";
@@ -199,12 +205,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/location-grey.svg"
-                      alt="calendar"
-                      width={24}
-                      height={24}
-                    />
+                    <MapPin className="text-grey-600 mr-2" size={24} />
 
                     <Input
                       placeholder="Event location or Online"
@@ -227,12 +228,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/calendar.svg"
-                      alt="calendar"
-                      width={24}
-                      height={24}
-                      className="filter-grey"
+                    <Calendar
+                      className="text-grey-600 mr-2 filter-grey"
+                      size={24}
                     />
                     <p className="ml-3 whitespace-nowrap text-grey-600">
                       Start Date:
@@ -259,12 +257,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/calendar.svg"
-                      alt="calendar"
-                      width={24}
-                      height={24}
-                      className="filter-grey"
+                    <Calendar
+                      className="text-grey-600 mr-2 filter-grey"
+                      size={24}
                     />
                     <p className="ml-3 whitespace-nowrap text-grey-600">
                       End Date:
@@ -293,12 +288,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/dollar.svg"
-                      alt="dollar"
-                      width={24}
-                      height={24}
-                      className="filter-grey"
+                    <DollarSign
+                      className="text-grey-600 mr-2 filter-grey"
+                      size={24}
                     />
                     <Input
                       type="number"
@@ -344,12 +336,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/user.svg"
-                      alt="capacity"
-                      width={24}
-                      height={24}
-                      className="filter-grey"
+                    <User
+                      className="text-grey-600 mr-2 filter-grey"
+                      size={24}
                     />
                     <Input
                       type="number"
@@ -373,12 +362,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className="w-full">
                 <FormControl>
                   <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/link.svg"
-                      alt="link"
-                      width={24}
-                      height={24}
-                    />
+                    <LinkIcon className="text-grey-600 mr-2" size={24} />
 
                     <Input
                       placeholder="URL"

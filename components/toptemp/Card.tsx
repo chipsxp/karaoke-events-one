@@ -39,7 +39,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
                 <Music className="h-16 w-16 text-white/80" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
           </div>
         </Link>
 
@@ -81,7 +81,13 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4 text-purple-500" />
             <span className="font-medium">
-              {formatDateTime(event.startDateTime.toISOString()).dateTime}
+              {
+                formatDateTime(
+                  typeof event.startDateTime === "string"
+                    ? event.startDateTime
+                    : event.startDateTime?.toISOString?.()
+                ).dateTime
+              }
             </span>
           </div>
           {event.location && (
@@ -93,11 +99,11 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
         </div>
 
         {/* Title */}
-        <Link href={`/events/${event._id}`} className="group/title">
+        <div className="group/title">
           <h3 className="text-xl font-bold text-gray-900 transition-colors group-hover/title:text-purple-600 dark:text-white dark:group-hover/title:text-purple-400 line-clamp-2">
             {event.title}
           </h3>
-        </Link>
+        </div>
 
         {/* Description */}
         {event.description && (

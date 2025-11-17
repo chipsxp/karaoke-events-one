@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, Dispatch, SetStateAction } from "react";
+import { Upload } from "lucide-react";
 import type { FileWithPath } from "react-dropzone";
 import { useDropzone } from "@uploadthing/react/hooks";
 import { generateClientDropzoneAccept } from "uploadthing/client";
@@ -48,12 +49,7 @@ export function FileUploader({
         </div>
       ) : (
         <div className="flex-center flex-col py-5 text-grey-500">
-          <img
-            src="/assets/icons/upload.svg"
-            width={77}
-            height={77}
-            alt="file upload"
-          />
+          <Upload size={77} className="mb-2" aria-label="file upload" />
           <h3 className="mb-2 mt-2">Drag photo here</h3>
           <p className="p-medium-12 mb-4">SVG, PNG, JPG</p>
           <Button type="button" className="rounded-full">

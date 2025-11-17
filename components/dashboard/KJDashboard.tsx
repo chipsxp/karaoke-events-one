@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { PlusCircle, Calendar, Users, Mic } from "lucide-react"
+import { PlusCircle, Calendar, Mic } from "lucide-react"
 
 interface KJDashboardProps {
   userId: string
