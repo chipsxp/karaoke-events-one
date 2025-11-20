@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Calendar, Music, Star, Users } from 'lucide-react';
 
 const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   
   if (!userId) {
     redirect('/sign-in');
@@ -25,9 +25,10 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
     redirect('/dashboard');
   }
 
-  const registeredEventsPage = Number(searchParams.registeredPage) || 1;
-  const browsePage = Number(searchParams.browsePage) || 1;
-  const searchQuery = Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q || '';
+  const params = await searchParams;
+  const registeredEventsPage = Number(params?.registeredPage) || 1;
+  const browsePage = Number(params?.browsePage) || 1;
+  const searchQuery = Array.isArray(params?.q) ? params.q[0] : params?.q || '';
 
   // Get registered/interested events
   const orders = await getOrdersByUser({ userId, page: registeredEventsPage });
@@ -42,11 +43,11 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
   });
 
   return (
-    <div className="flex flex-col gap-8 lg:mr-36 lg:ml-36 md:m-4 min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="flex flex-col gap-8 lg:mr-36 lg:ml-36 md:m-4 min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="container gap-8 mx-auto px-12 py-12">
         {/* Header Section */}
         <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             🎤 My Karaoke Events
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -58,7 +59,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-12">
           {/* Card 1: My Registered Events */}
           <Card className="shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border-0 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white relative">
+            <CardHeader className="bg-linear-to-r from-purple-600 via-purple-500 to-pink-500 text-white relative">
               <div className="absolute inset-0 bg-black/10"></div>
               <div className="relative z-10">
                 <div className="flex items-center space-x-3 mb-2">
@@ -112,7 +113,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
 
           {/* Card 2: Browse & Discover New Events */}
           <Card className="shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border-0 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 text-white relative">
+            <CardHeader className="bg-linear-to-r from-indigo-600 via-blue-500 to-purple-500 text-white relative">
               <div className="absolute inset-0 bg-black/10"></div>
               <div className="relative z-10">
                 <div className="flex items-center space-x-3 mb-2">
@@ -142,7 +143,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 h-12 px-6 rounded-lg font-medium"
+                    className="bg-linear-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 h-12 px-6 rounded-lg font-medium"
                   >
                     Search
                   </Button>
@@ -191,7 +192,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
         {/* Quick Stats Dashboard */}
         <div className="flex flex-col md:flex-row justify-center items-stretch gap-6 w-full">
           <div className="flex-1 min-w-0">
-            <Card className="bg-gradient-to-br from-green-400 to-emerald-500 text-white border-0 shadow-xl h-full">
+            <Card className="bg-linear-to-br from-green-400 to-emerald-500 text-white border-0 shadow-xl h-full">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center justify-between flex-1">
                   <div>
@@ -208,7 +209,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <Card className="bg-gradient-to-br from-purple-400 to-pink-500 text-white border-0 shadow-xl h-full">
+            <Card className="bg-linear-to-br from-purple-400 to-pink-500 text-white border-0 shadow-xl h-full">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center justify-between flex-1">
                   <div>
@@ -225,7 +226,7 @@ const KSEventsPage = async ({ searchParams }: SearchParamProps) => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <Card className="bg-gradient-to-br from-green-400 to-teal-500 text-white border-0 shadow-xl h-full">
+            <Card className="bg-linear-to-br from-green-400 to-teal-500 text-white border-0 shadow-xl h-full">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center justify-between flex-1">
                   <div>

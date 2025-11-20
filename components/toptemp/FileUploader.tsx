@@ -1,18 +1,14 @@
 "use client";
 
-import { useCallback, Dispatch, SetStateAction } from "react";
 import { Upload } from "lucide-react";
-import type { FileWithPath } from "react-dropzone";
-import { useDropzone } from "@uploadthing/react/hooks";
-import { generateClientDropzoneAccept } from "uploadthing/client";
-
-import { Button } from "@/components/ui/button";
-import { convertFileToUrl } from "@/lib/utils";
+import { UploadButton } from "@uploadthing/react";
+import type { ClientUploadedFileData } from "uploadthing/types";
+import { OurFileRouterValue } from "@/app/api/uploadthing/core";
 
 type FileUploaderProps = {
   onFieldChange: (url: string) => void;
   imageUrl: string;
-  setFiles: Dispatch<SetStateAction<File[]>>;
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
 };
 
 export function FileUploader({
@@ -20,23 +16,8 @@ export function FileUploader({
   onFieldChange,
   setFiles,
 }: FileUploaderProps) {
-  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-    setFiles(acceptedFiles);
-    onFieldChange(convertFileToUrl(acceptedFiles[0]));
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: generateClientDropzoneAccept(["image/*"]),
-  });
-
   return (
-    <div
-      {...getRootProps()}
-      className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50"
-    >
-      <input {...getInputProps()} className="cursor-pointer" />
-
+    <div className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50">
       {imageUrl ? (
         <div className="flex h-full w-full flex-1 justify-center ">
           <img
@@ -52,9 +33,19 @@ export function FileUploader({
           <Upload size={77} className="mb-2" aria-label="file upload" />
           <h3 className="mb-2 mt-2">Drag photo here</h3>
           <p className="p-medium-12 mb-4">SVG, PNG, JPG</p>
-          <Button type="button" className="rounded-full">
-            Select from computer
-          </Button>
+          <UploadButton<typeof OurFileRouterValue, "imageUploader">
+            endpoint="imageUploader"
+            onClientUploadComplete={(
+              res: ClientUploadedFileData<{ uploadedBy: string }>[] | undefined
+            ) => {
+              if (res && res[0]?.ufsUrl) {
+                onFieldChange(res[0].ufsUrl);
+              }
+            }}
+            onUploadError={(error) => {
+              alert("Upload failed: " + (error.message || "Unknown error"));
+            }}
+          />
         </div>
       )}
     </div>

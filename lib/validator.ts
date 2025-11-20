@@ -16,7 +16,7 @@ export const eventFormSchema = z.object({
   categoryId: z.string(),
   price: z.string(),
   isFree: z.boolean(),
-  url: z.string().url(),
+  url: z.url(),
   capacity: z.number().min(1, "Capacity must be at least 1"),
-  autoApprove: z.boolean().default(false),
+  autoApprove: z.boolean(),
 });

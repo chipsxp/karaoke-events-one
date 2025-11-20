@@ -2,7 +2,7 @@ import { SignUp } from "@clerk/nextjs";
 
 const SignUpPage = () => {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+    <div className="flex h-screen w-full items-center justify-center bg-linear-to-br from-purple-400 via-pink-500 to-red-500">
       <SignUp
         routing="path"
         path="/sign-up"

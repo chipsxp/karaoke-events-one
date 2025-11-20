@@ -6,7 +6,7 @@ import KSDashboard from '@/components/dashboard/KSDashboard';
 import PromoterDashboard from '@/components/dashboard/PromoterDashboard';
 
 export default async function DashboardPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
   const user = await currentUser();
 
   if (!userId || !user) {

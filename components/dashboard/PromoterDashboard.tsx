@@ -88,7 +88,7 @@ export default function PromoterDashboard({ userId }: PromoterDashboardProps) {
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <span className="text-sm font-bold text-purple-600">1</span>
               </div>
               <div>
@@ -97,7 +97,7 @@ export default function PromoterDashboard({ userId }: PromoterDashboardProps) {
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <span className="text-sm font-bold text-purple-600">2</span>
               </div>
               <div>
@@ -106,7 +106,7 @@ export default function PromoterDashboard({ userId }: PromoterDashboardProps) {
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                 <span className="text-sm font-bold text-purple-600">3</span>
               </div>
               <div>

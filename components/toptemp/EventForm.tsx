@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,12 +14,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { eventFormSchema } from "@/lib/validator";
 import * as z from "zod";
-import { eventDefaultValues } from "@/constants";
 import Dropdown from "./Dropdown";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "@/components/toptemp/FileUploader";
 import { useState } from "react";
-import Image from "next/image";
 import {
   MapPin,
   Calendar,
@@ -43,7 +42,7 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
-  const initialValues =
+  const initialValues: z.infer<typeof eventFormSchema> =
     event && type === "Update"
       ? {
           title: event.title,
@@ -57,9 +56,22 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           isFree: event.isFree,
           url: event.eventUrl || "",
           capacity: event.capacity,
-          autoApprove: event.autoApprove,
+          autoApprove: event.autoApprove ?? false,
         }
-      : eventDefaultValues;
+      : {
+          title: "",
+          description: "",
+          location: "",
+          imageUrl: "",
+          startDateTime: new Date(),
+          endDateTime: new Date(),
+          categoryId: "",
+          price: "",
+          isFree: false,
+          url: "",
+          capacity: 50,
+          autoApprove: false,
+        };
   const router = useRouter();
 
   const { startUpload } = useUploadThing("imageUploader");
@@ -69,7 +81,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     defaultValues: initialValues,
   });
 
-  async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+  const onSubmit: SubmitHandler<z.infer<typeof eventFormSchema>> = async (values) => {
     let uploadedImageUrl = values.imageUrl;
 
     if (files.length > 0) {
@@ -124,7 +136,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
   return (
     <Form {...form}>
-      <form
+<form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-5"
       >

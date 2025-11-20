@@ -24,11 +24,13 @@ export const ourFileRouter = {
       // This code RUNS ON YOUR SERVER after upload
       console.log("Upload complete for userId:", metadata.userId);
 
-      console.log("file url", file.url);
+      console.log("file url", file.ufsUrl);
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
     }),
 } satisfies FileRouter;
 
+// Export both value and type for UploadThing generics
 export type OurFileRouter = typeof ourFileRouter;
+export { ourFileRouter as OurFileRouterValue };

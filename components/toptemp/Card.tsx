@@ -3,7 +3,6 @@ import { formatDateTime } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { DeleteConfirmation } from "./DeleteConfirmation";
 import EditEventButton from "./EditEventButton";
 import { Calendar, MapPin, Users, Music } from "lucide-react";
@@ -14,8 +13,8 @@ type CardProps = {
   hidePrice?: boolean;
 };
 
-const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
-  const { sessionClaims } = auth();
+const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
+  const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
 
   const isEventCreator = userId === event.organizer._id.toString();
@@ -25,7 +24,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
       {/* Image Section with Overlay */}
       <div className="relative h-56 w-full overflow-hidden">
         <Link href={`/events/${event._id}`} className="block h-full w-full">
-          <div className="relative h-full w-full bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+          <div className="relative h-full w-full bg-linear-to-br from-purple-400 via-pink-500 to-red-500">
             {event.imageUrl ? (
               <Image
                 src={event.imageUrl}
@@ -35,11 +34,11 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
                 sizes="(max-width: 420px) 100vw, 420px"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-purple-400 via-pink-500 to-red-500">
                 <Music className="h-16 w-16 text-white/80" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
           </div>
         </Link>
 
@@ -115,7 +114,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
         {/* Organizer and Attendees */}
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-linear-to-br from-purple-400 to-pink-500 flex items-center justify-center">
               <span className="text-xs font-bold text-white">
                 {event.organizer.firstName?.[0]}
                 {event.organizer.lastName?.[0]}

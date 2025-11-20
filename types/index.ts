@@ -1,7 +1,7 @@
 // ====== URL PARAMS
 export type SearchParamProps = {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // ====== USER TYPES

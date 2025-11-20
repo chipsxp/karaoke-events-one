@@ -1,68 +1,68 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  :root {
+    --color-primary-500: #624cf5;
+    --color-primary-50: #f6f8fd;
+    --color-coral-500: #15bf59;
+    --color-gray-600: #545454;
+    --color-gray-500: #757575;
+    --color-gray-400: #afafaf;
+    --color-gray-50: #f6f6f6;
+    --font-poppins: "Poppins", sans-serif;
+    --bg-dotted-pattern: url("/images/dotted-pattern.png");
+    --bg-hero-img: url("/images/hero.jpg");
+    --bg-party-event: url("/images/star-fling_crowd_cheering.png");
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
   }
 }
 
@@ -74,11 +74,12 @@
 }
 
 body {
-  font-family: var(--font-poppins)
+  font-family: var(--font-poppins);
 }
 
-.filter-grey {
-  filter: brightness(0) saturate(100%) invert(47%) sepia(0%) saturate(217%) hue-rotate(32deg) brightness(98%) contrast(92%);
+.filter-gray {
+  filter: brightness(0) saturate(100%) invert(47%) sepia(0%) saturate(217%)
+    hue-rotate(32deg) brightness(98%) contrast(92%);
 }
 
 /* ========================================== TAILWIND STYLES */
@@ -98,86 +99,93 @@ body {
   /* TYPOGRAPHY */
   /* 64 */
   .h1-bold {
-    @apply font-bold text-[40px] leading-[48px] lg:text-[48px] lg:leading-[60px] xl:text-[58px] xl:leading-[74px];
+    @apply font-bold text-[40px] leading-12 lg:text-[48px] lg:leading-[60px] xl:text-[58px] xl:leading-[74px];
   }
 
   /* 40 */
   .h2-bold {
-    @apply font-bold text-[32px] leading-[40px] lg:text-[36px] lg:leading-[44px] xl:text-[40px] xl:leading-[52px];
+    @apply font-bold text-[32px] leading-10 lg:text-[36px] lg:leading-11 xl:text-[40px] xl:leading-[52px];
   }
 
   /* 36 */
   .h3-bold {
-    @apply font-bold text-[28px] leading-[36px] md:text-[32px] md:leading-[40px];
+    @apply font-bold text-[28px] leading-9 md:text-[32px] md:leading-10;
   }
 
   /* 32 */
   .h4-medium {
-    @apply font-medium text-[24px] leading-[32px] md:text-[28px] md:leading-[36px];
+    @apply font-medium text-[24px] leading-8 md:text-[28px] md:leading-9;
   }
 
   /* 28 */
   .h5-bold {
-    @apply font-bold text-[20px] leading-[28px] md:text-[24px] md:leading-[32px];
+    @apply font-bold text-[20px] leading-7 md:text-[24px] md:leading-8;
   }
 
   /* 24 */
   .p-bold-24 {
-    @apply font-bold text-[24px] leading-[36px];
+    @apply font-bold text-[24px] leading-9;
   }
 
   /* 20 */
   .p-medium-20 {
-    @apply font-medium text-[20px] leading-[30px];
+    @apply font-medium text-[20px] leading-7;
   }
 
   /* 18 */
   .p-regular-18 {
-    @apply font-normal text-[18px] leading-[28px];
+    @apply font-normal text-[18px] leading-7;
   }
 
   /* 16 */
   .p-medium-16 {
-    @apply font-medium text-[16px] leading-[24px];
+    @apply font-medium text-[16px] leading-6;
   }
 
   /* 14 */
   .p-regular-14 {
-    @apply font-normal text-[14px] leading-[20px];
+    @apply font-normal text-[14px] leading-5;
   }
 
   /* 12 */
   .p-medium-12 {
-    @apply font-medium text-[12px] leading-[16px];
+    @apply font-medium text-[12px] leading-4;
   }
 
   /* SHADCN OVERRIDES */
   .select-field {
-    @apply w-full bg-grey-50 h-11 rounded-md px-3 border-none placeholder:text-grey-500;
+    @apply w-full bg-gray-50 h-11 rounded-md px-3 border-none placeholder:text-gray-500;
   }
 
   .input-field {
-    @apply bg-grey-50 h-11 focus-visible:ring-offset-0 focus-visible:ring-transparent !important;
+    @apply bg-gray-50 h-11 focus-visible:ring-offset-0 focus-visible:ring-transparent;
   }
 
   .textarea {
-    @apply bg-grey-50 h-11 focus-visible:ring-offset-0 focus-visible:ring-transparent !important;
+    @apply bg-gray-50 h-11 focus-visible:ring-offset-0 focus-visible:ring-transparent;
   }
 
   .checkbox {
-    @apply border-grey-300 data-[state=checked]:bg-primary-500 data-[state=checked]:text-white;
+    @apply border-gray-300;
+  }
+  [data-state="checked"].checkbox {
+    background-color: #624cf5;
+    color: #fff;
   }
 
   .dropdown {
-    @apply bg-white w-full rounded-md border-[1.5px] border-stroke p-5 text-dark-500 focus:outline-none bg-transparent;
+    @apply bg-white w-full rounded-md border-[1.5px] border-gray-300 p-5 text-gray-800 focus:outline-none;
   }
 
   .select-item {
-    @apply py-3 cursor-pointer focus:bg-primary-50;
+    @apply py-3 cursor-pointer;
+  }
+  .select-item:focus {
+    background-color: #f6f8fd;
   }
 
   .toggle-switch {
-    @apply bg-gray-300 !important;
+    @apply bg-gray-300;
   }
 
   /* GLASS MORPHISM EFFECT */
@@ -233,7 +241,8 @@ body {
 
   /* Pulse slow */
   @keyframes pulse-slow {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.7;
       transform: scale(1);
     }
@@ -248,12 +257,7 @@ body {
 
   /* Shimmer loading */
   .shimmer {
-    background: linear-gradient(
-      90deg,
-      #f0f0f0 25%,
-      #e0e0e0 50%,
-      #f0f0f0 75%
-    );
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
@@ -273,12 +277,13 @@ body {
 
   /* Gradient text */
   .gradient-text {
-    @apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
+    @apply bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
   }
 
   /* Bounce animation */
   @keyframes bounce-subtle {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0);
     }
     50% {
@@ -313,15 +318,15 @@ body {
   }
 
   /* Responsiveness inside utilities */
-  @screen sm {
-    .wrapper {
+@media (min-width: 640px) {
+  .wrapper {
       @apply px-4;
     }
     .h1-bold {
-      @apply text-[32px] leading-[40px];
+      @apply text-[32px] leading-10;
     }
     .h2-bold {
-      @apply text-[28px] leading-[36px];
+      @apply text-[28px] leading-9;
     }
   }
 }
@@ -340,13 +345,13 @@ body {
 }
 
 .cl-userButtonPopoverCard {
-  right: 4px !important;
+  right: 4px;
 }
 
 .cl-formButtonPrimary:hover,
 .cl-formButtonPrimary:focus,
 .cl-formButtonPrimary:active {
-  background-color: #705CF7
+  background-color: #705cf7;
 }
 
 /* ========================================== REACT-DATEPICKER STYLES */
@@ -362,11 +367,11 @@ body {
 }
 
 .react-datepicker__day--selected {
-  background-color: #624cf5 !important;
-  color: #ffffff !important;
+  background-color: #624cf5;
+  color: #ffffff;
   border-radius: 4px;
 }
 
 .react-datepicker__time-list-item--selected {
-  background-color: #624cf5 !important;
+  background-color: #624cf5;
 }

@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="border-t-2 bg-cover bg-center relative" style={{ backgroundImage: "url('/images/party-event.jpg')" }}>
       {/* Overlay for better text visibility */}
-      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div className="absolute inset-0 bg-black/30"></div>
 
       <div className="wrapper flex-center flex-col gap-4 p-5 text-center relative z-10">
         {/* Logo Section - Now its own Link */}

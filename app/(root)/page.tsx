@@ -5,17 +5,17 @@ import HeroButtons from "@/components/toptemp/HeroButtons";
 import CTAButton from "@/components/toptemp/CTAButton";
 import { getAllEvents } from "@/lib/actions/event.actions";
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowDown, Sparkles, Users, Calendar } from "lucide-react";
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const page = Number(searchParams?.page) || 1;
-  const searchText = (searchParams?.query as string) || "";
-  const category = (searchParams?.category as string) || "";
+  const params = await searchParams;
+  const page = Number(params?.page) || 1;
+  const searchText = (params?.query as string) || "";
+  const category = (params?.category as string) || "";
 
   const events = await getAllEvents({
     query: searchText,
@@ -27,7 +27,7 @@ export default async function Home({
   return (
     <>
       {/* Hero Section */}
-      <section className="wrapper relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 rounded-3xl my-12">
+      <section className="wrapper relative min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-br from-purple-600 via-pink-500 to-red-500 rounded-3xl my-12">
         <div className="absolute inset-0 bg-black/20 rounded-3xl" />
 
         {/* Animated background elements */}
@@ -77,7 +77,7 @@ export default async function Home({
 
           <div className="relative">
             <div className="relative mx-auto w-full max-w-md">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-3xl blur-2xl opacity-30" />
+              <div className="absolute inset-0 bg-linear-to-r from-purple-400 to-pink-400 rounded-3xl blur-2xl opacity-30" />
               <Image
                 src="/images/hero.jpg"
                 alt="Karaoke party"
@@ -99,7 +99,7 @@ export default async function Home({
       {/* Events Section */}
       <section
         id="events"
-        className="wrapper my-12 flex flex-col gap-8 rounded-3xl bg-gradient-to-br from-pink-600 via-purple-600 to-yellow-600 py-20 md:py-32"
+        className="wrapper my-12 flex flex-col gap-8 rounded-3xl bg-linear-to-br from-pink-600 via-purple-600 to-yellow-600 py-20 md:py-32"
       >
         <div className="text-center">
           <h2 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -113,7 +113,7 @@ export default async function Home({
 
         <div className="flex w-full flex-col gap-5 md:flex-row">
           <div className="flex-1">
-            <Search />
+            <Search query={searchText} />
           </div>
           <div className="w-full md:w-64">
             <CategoryFilter />
@@ -132,7 +132,7 @@ export default async function Home({
       </section>
 
       {/* CTA Section */}
-      <section className="wrapper bg-gradient-to-r from-purple-600 to-pink-600 py-20 rounded-3xl my-12">
+      <section className="wrapper bg-linear-to-r from-purple-600 to-pink-600 py-20 rounded-3xl my-12">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
             Ready to Host Your Own Event?

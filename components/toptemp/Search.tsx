@@ -6,8 +6,9 @@ import { Input } from '../ui/input';
 import { formUrlQuery, removeKeysFromQuery } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search as SearchIcon, X } from 'lucide-react';
-const Search = ({ placeholder = 'Search events...' }: { placeholder?: string }) => {
-  const [query, setQuery] = useState('');
+
+const Search = ({ query: initialQuery = '', placeholder = 'Search events...' }: { query?: string, placeholder?: string }) => {
+  const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,7 +47,7 @@ const Search = ({ placeholder = 'Search events...' }: { placeholder?: string }) 
 
   return (
     <div
-      className={`relative flex-center min-h-[56px] w-full overflow-hidden rounded-full bg-white border-2 transition-all duration-300 ${
+      className={`relative flex-center min-h-14 w-full overflow-hidden rounded-full bg-white border-2 transition-all duration-300 ${
         isFocused ? 'border-purple-500 shadow-lg shadow-purple-500/20 scale-102' : 'border-gray-200 hover:border-gray-300'
       }`}
     >

@@ -48,7 +48,12 @@ const ProfileButtons = ({
   const getButtonContent = () => {
     switch (type) {
       case "browse-events":
-        return "Browse Events";
+        return (
+          <>
+            <Ticket className="mr-2 h-4 w-4" />
+            Browse Events
+          </>
+        );
       case "explore-events":
         return "Explore Events";
       case "edit-profile":

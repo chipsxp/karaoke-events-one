@@ -66,7 +66,7 @@ interface RecentEvent {
 const Progress = ({ value, className, color = "purple" }: { value: number; className?: string; color?: string }) => (
   <div className={`w-full bg-gray-100 rounded-full h-3 overflow-hidden ${className}`}>
     <div 
-      className={`h-full rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-${color}-400 to-${color}-600`} 
+      className={`h-full rounded-full transition-all duration-500 ease-out bg-linear-to-r from-${color}-400 to-${color}-600`} 
       style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
     ></div>
   </div>
@@ -85,7 +85,7 @@ const StatCard = ({
   color: string
   trend?: number
 }) => (
-  <Card className={`bg-gradient-to-br from-${color}-50 to-${color}-100 border-${color}-200 border-2 hover:shadow-lg transition-all duration-300`}>
+  <Card className={`bg-linear-to-br from-${color}-50 to-${color}-100 border-${color}-200 border-2 hover:shadow-lg transition-all duration-300`}>
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">
         <CardTitle className={`text-lg font-bold text-${color}-800`}>{title}</CardTitle>
@@ -154,11 +154,11 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
   const getStatusText = (attended: boolean) => attended ? 'Attended' : 'Upcoming'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="container mx-auto px-4 py-4">
         {/* Header Section */}
         <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             🎤 KS Dashboard
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -198,7 +198,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
 
         {/* Progress Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
+          <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-indigo-200">
             <CardHeader>
               <CardTitle className="text-indigo-800 flex items-center">
                 <Zap className="w-5 h-5 mr-2" />
@@ -223,7 +223,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-pink-50 to-red-50 border-pink-200">
+          <Card className="bg-linear-to-br from-pink-50 to-red-50 border-pink-200">
             <CardHeader>
               <CardTitle className="text-pink-800 flex items-center">
                 <Sparkles className="w-5 h-5 mr-2" />
@@ -234,56 +234,56 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
               <div className="relative">
                 <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide" ref={scrollContainerRef}>
                   {/* First Karaoke Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-yellow-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-yellow-200">
                     <Award className="w-8 h-8 text-yellow-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">First Karaoke</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Your debut event</p>
                   </div>
 
                   {/* Dozen Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-blue-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-blue-200">
                     <Mic className="w-8 h-8 text-blue-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">12+ Events</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Karaoke veteran</p>
                   </div>
 
                   {/* Frequent Performer Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-purple-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-purple-200">
                     <CalendarCheck className="w-8 h-8 text-purple-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Frequent Singer</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Regular participant</p>
                   </div>
 
                   {/* Thumbs Up Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-pink-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-pink-200">
                     <ThumbsUp className="w-8 h-8 text-pink-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Thumbs Star</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">{stats.thumbsUpCount}+ thumbs</p>
                   </div>
 
                   {/* Attendance Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-green-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-green-200">
                     <Trophy className="w-8 h-8 text-green-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Perfect Shows</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">{stats.attendanceRate}% rate</p>
                   </div>
 
                   {/* Crown Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-orange-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-orange-200">
                     <Crown className="w-8 h-8 text-orange-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Karaoke King/Queen</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Top performer</p>
                   </div>
 
                   {/* Social Butterfly Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-indigo-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-indigo-200">
                     <Users className="w-8 h-8 text-indigo-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Social Star</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Most venues visited</p>
                   </div>
 
                   {/* Night Owl Badge */}
-                  <div className="flex-shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-teal-200">
+                  <div className="shrink-0 w-40 bg-white rounded-xl shadow-md p-4 flex flex-col items-center border-2 border-teal-200">
                     <Clock className="w-8 h-8 text-teal-500 mb-2" />
                     <h3 className="font-bold text-sm text-center text-gray-800">Night Owl</h3>
                     <p className="text-xs text-gray-500 text-center mt-1">Late night events</p>
@@ -319,11 +319,11 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
         {/* Recent Events Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Recent Events
             </h2>
             <Link href="/events">
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+              <Button className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
                 Browse All Events
               </Button>
             </Link>
@@ -372,7 +372,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
                   <div className="mt-4">
                     <Button 
                       variant={event.attended ? "outline" : "default"}
-                      className={`w-full ${event.attended ? 'border-purple-500 text-purple-600 hover:bg-purple-50' : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'}`}
+                      className={`w-full ${event.attended ? 'border-purple-500 text-purple-600 hover:bg-purple-50' : 'bg-linear-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'}`}
                       size="sm"
                     >
                       {event.attended ? 'View Details' : 'Register Now'}
@@ -388,7 +388,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Changed from Link wrapping Card to Card with onClick to avoid nested anchor tags */}
           <Card
-            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 cursor-pointer"
+            className="bg-linear-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 cursor-pointer"
             onClick={() => window.location.href = "/events"}
           >
             <CardContent className="p-6 text-center">
@@ -399,7 +399,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
           </Card>
 
           <Card
-            className="bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 transition-all duration-300 cursor-pointer"
+            className="bg-linear-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 transition-all duration-300 cursor-pointer"
             onClick={() => window.location.href = "/profile"}
           >
             <CardContent className="p-6 text-center">
@@ -410,7 +410,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
           </Card>
 
           <Card
-            className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 cursor-pointer"
+            className="bg-linear-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 cursor-pointer"
             onClick={() => window.location.href = "/orders"}
           >
             <CardContent className="p-6 text-center">

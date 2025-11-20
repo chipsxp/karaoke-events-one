@@ -21,12 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import React from "react";
 import WelcomeBannerButton from "@/components/toptemp/WelcomeBannerButton";
 import ProfileButtons from "@/components/toptemp/ProfileButtons";
 
 const ProfilePage = async ({ searchParams }: SearchParamProps) => {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     return (
@@ -39,8 +38,9 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
     );
   }
 
-  const ordersPage = Number(searchParams?.ordersPage) || 1;
-  const eventsPage = Number(searchParams?.eventsPage) || 1;
+  const params = await searchParams;
+  const ordersPage = Number(params?.ordersPage) || 1;
+  const eventsPage = Number(params?.eventsPage) || 1;
 
   try {
     // Fetch user data
@@ -76,7 +76,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
     return (
       <>
         {/* Welcome Banner */}
-        <section className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-6">
+        <section className="bg-linear-to-r from-purple-600 to-pink-600 text-white py-6">
           <div className="wrapper">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center">
@@ -105,9 +105,14 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                   <h1 className="text-3xl md:text-4xl font-bold">
                     {user?.firstName} {user?.lastName}
                   </h1>
-                  <p className="text-purple-600 mt-2 font-medium">
+                  <p className="text-purple-600 mt-2 font-medium flex items-center gap-2">
                     {user?.role === "KJ" && "Karaoke Jockey"}
-                    {user?.role === "KS" && "Karaoke Singer"}
+                    {user?.role === "KS" && (
+                      <>
+                        <Mic className="h-5 w-5" />
+                        Karaoke Singer
+                      </>
+                    )}
                     {user?.role === "Promoter" && "Event Promoter"}
                   </p>
                   <div className="flex flex-wrap items-center mt-3 gap-2">
@@ -132,7 +137,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
         </section>
 
         {/* Stats Section */}
-        <section className="bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50 py-12">
+        <section className="bg-linear-to-r from-purple-50 via-pink-50 to-indigo-50 py-12">
           <div className="wrapper">
             <h2 className="text-3xl font-bold text-center mb-2">
               Karaoke Universe
@@ -142,7 +147,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Unique Venues Card */}
-              <Card className="bg-gradient-to-br from-orange-400 to-red-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
+              <Card className="bg-linear-to-br from-orange-400 to-red-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -162,7 +167,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
               </Card>
 
               {/* Total Genres Card */}
-              <Card className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
+              <Card className="bg-linear-to-br from-cyan-400 to-blue-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -182,7 +187,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
               </Card>
 
               {/* Total Artists Card */}
-              <Card className="bg-gradient-to-br from-purple-400 to-indigo-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
+              <Card className="bg-linear-to-br from-purple-400 to-indigo-500 text-white border-0 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -265,7 +270,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
 
         {/* My Tickets Section - Only for KS users */}
         {user?.role === "KS" && (
-          <section className="bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50 py-10">
+          <section className="bg-linear-to-r from-purple-50 via-pink-50 to-indigo-50 py-10">
             <div className="wrapper">
               <div className="text-center mb-8">
                 <h3 className="text-3xl font-bold flex items-center justify-center">
@@ -312,7 +317,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 rounded-xl border-0 shadow-lg"
                     >
                       <div className="relative">
-                        <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-48 flex items-center justify-center">
+                        <div className="bg-linear-to-r from-purple-400 to-pink-500 h-48 flex items-center justify-center">
                           <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
                             <Music className="h-12 w-12 text-white" />
                           </div>
@@ -365,7 +370,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                           />
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                           >
                             <Ticket className="mr-1 h-4 w-4" />
                             Ticket
@@ -377,7 +382,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                 </div>
               ) : (
                 <div className="text-center py-16 max-w-md mx-auto">
-                  <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                  <div className="bg-linear-to-r from-purple-100 to-pink-100 rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-6">
                     <Ticket className="h-16 w-16 text-purple-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -388,7 +393,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                   </p>
                   <ProfileButtons
                     type="no-tickets-browse"
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3"
+                    className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3"
                   />
                 </div>
               )}
