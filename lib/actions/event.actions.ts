@@ -145,6 +145,7 @@ export async function getAllEvents({
     };
   } catch (error) {
     handleError(error);
+    return { data: [], totalPages: 0 };
   }
 }
 
@@ -183,6 +184,7 @@ export async function getEventsByUser({
     };
   } catch (error) {
     handleError(error);
+    return { data: [], totalPages: 0 };
   }
 }
 
@@ -215,6 +217,7 @@ export async function getRelatedEventsByCategory({
     };
   } catch (error) {
     handleError(error);
+    return { data: [], totalPages: 0 };
   }
 }
 
