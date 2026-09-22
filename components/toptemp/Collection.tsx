@@ -30,7 +30,7 @@ const Collection = ({
   collectionType,
   urlParamName,
 }: CollectionProps) => {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="text-center animate-fade-in-up">

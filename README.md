@@ -311,15 +311,58 @@ npm run dev
 
 ### Environment Configuration
 ```bash
-# Required environment variables
+# Required environment variables (see .env.example)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SECRET=
 MONGODB_URI=
 STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 UPLOADTHING_SECRET=
 UPLOADTHING_APP_ID=
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 ```
+
+### Viewing the app locally: what actually works
+The homepage and every route render `<Header />`, which is wrapped in a global
+`<ClerkProvider>` (`app/layout.tsx`) and calls Clerk's client/server auth APIs.
+There is **no supported way to render any page without a real Clerk
+application** -- placeholder/fake keys fail with `Invalid host` because Clerk
+validates the publishable key's frontend-api domain against a real registered
+instance, and removing `clerkMiddleware()` from `proxy.ts` instead crashes with
+`auth() was called but Clerk can't detect usage of clerkMiddleware()`. Neither
+is a viable local-only workaround.
+
+To actually see the app running locally:
+1. Create a free Clerk application at https://dashboard.clerk.com and copy its
+   **test** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` into
+   `.env.local`. This alone is enough to render every page and exercise
+   sign-in/sign-up.
+2. For data-backed pages (event listings, dashboards), also set `MONGODB_URI`
+   to a local MongoDB instance or a free MongoDB Atlas cluster. Without it,
+   event-listing pages degrade to an empty state rather than crashing (see
+   issue #5) but will show no data.
+3. Stripe/UploadThing keys are only required to actually complete a ticket
+   purchase or upload an event image -- browsing works without them.
+
+### Known issues from initial investigation
+The following were found while auditing commit `9695d716b0bbb411ef3c271547af4aacdb666e1b`
+and are tracked as GitHub issues -- check there before assuming a local bug is new:
+[#1](https://github.com/chipsxp/karaoke-events-one/issues/1)
+[#2](https://github.com/chipsxp/karaoke-events-one/issues/2)
+[#3](https://github.com/chipsxp/karaoke-events-one/issues/3)
+[#6](https://github.com/chipsxp/karaoke-events-one/issues/6)
+[#7](https://github.com/chipsxp/karaoke-events-one/issues/7)
+[#8](https://github.com/chipsxp/karaoke-events-one/issues/8)
+[#9](https://github.com/chipsxp/karaoke-events-one/issues/9)
+
+### ⚠️ Security note: ticket purchasing
+[Issue #10](https://github.com/chipsxp/karaoke-events-one/issues/10) documents
+that `checkoutOrder` (`lib/actions/order.actions.ts`) currently has no
+server-side auth check and trusts the client-supplied price/`isFree`/`buyerId`.
+Treat the checkout flow as **not production-safe** until that is fixed, and
+never introduce a local "skip auth" mode that touches this code path.
 
 ---
 
