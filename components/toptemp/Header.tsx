@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import NavItems from "@/components/toptemp/NavItems";
 import MobileNav from "@/components/toptemp/MobileNav";
-import AuthButtons from "@/components/toptemp/AuthButtons";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+// PREVIEW MODE (ui-work branch, revert before merging to main): AuthButtons/SignedIn/SignedOut/UserButton removed, no ClerkProvider available.
 
 const Header = () => {
   return (
@@ -32,20 +31,16 @@ const Header = () => {
 
         {/* Clerk Auth Navigation with Mobile Navigation */}
         <div className="flex w-32 justify-end gap-3">
-          <SignedIn>
-            <UserButton
-              signInUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10 md:w-12 md:h-12", // 20% larger (from default ~8x8 to 10x10, md: 12x12)
-                },
-              }}
-            />
-          </SignedIn>
+          {/* PREVIEW MODE (ui-work branch, revert before merging to main): static stand-in for SignedIn/SignedOut/UserButton */}
           <MobileNav />
-          <SignedOut>
-            <AuthButtons />
-          </SignedOut>
+          <button
+            type="button"
+            disabled
+            className="button rounded-full px-4 py-2 text-sm opacity-60"
+            title="Sign in disabled in preview mode"
+          >
+            Sign In (preview)
+          </button>
         </div>
       </div>
     </header>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+// PREVIEW MODE (ui-work branch, revert before merging to main): useAuth() replaced with a stub below (no ClerkProvider available).
 import { getUserById } from "@/lib/actions/user.actions";
 
 interface User {
@@ -11,7 +11,7 @@ interface User {
 
 const NavItems = () => {
   const pathname = usePathname();
-  const { userId } = useAuth();
+  const userId: string | null = null; // PREVIEW MODE stub, was: const { userId } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 

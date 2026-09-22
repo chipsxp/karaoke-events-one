@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+// PREVIEW MODE (ui-work branch, revert before merging to main): ClerkProvider import removed with its usage below.
 import "./globals.css";
 
 
@@ -23,11 +23,10 @@ export default function AppRootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // PREVIEW MODE (ui-work branch, revert before merging to main): no real Clerk instance available yet.
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={poppins.className}>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={poppins.className}>{children}</body>
+    </html>
   );
 }

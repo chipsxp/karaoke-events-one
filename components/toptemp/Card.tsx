@@ -1,6 +1,6 @@
 import { IEvent } from "@/lib/database/models/event.model";
 import { formatDateTime } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+// PREVIEW MODE (ui-work branch, revert before merging to main): auth() replaced with a stub below.
 import Image from "next/image";
 import Link from "next/link";
 import { DeleteConfirmation } from "./DeleteConfirmation";
@@ -14,8 +14,7 @@ type CardProps = {
 };
 
 const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
-  const { sessionClaims } = await auth();
-  const userId = sessionClaims?.userId as string;
+  const userId: string | null = null; // PREVIEW MODE stub, was: (await auth()).sessionClaims?.userId
 
   const isEventCreator = userId === event.organizer._id.toString();
 
