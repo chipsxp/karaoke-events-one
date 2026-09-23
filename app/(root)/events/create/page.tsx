@@ -1,21 +1,8 @@
 import EventForm from "@/components/toptemp/EventForm";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { getUserById } from "@/lib/actions/user.actions";
+// PREVIEW MODE (ui-work branch, revert before merging to main): auth()/role redirect removed, no ClerkProvider available.
 
 const CreateEvent = async () => {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
-  const dbUser = await getUserById(userId);
-
-  // If user doesn't exist or role is not KJ, redirect to dashboard
-  if (!dbUser || dbUser.role !== "KJ") {
-    redirect("/dashboard");
-  }
+  const userId = "preview-user"; // PREVIEW MODE stub, was: const { userId } = await auth(); + redirects
 
   return (
     <>
