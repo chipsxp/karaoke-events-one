@@ -357,12 +357,21 @@ and are tracked as GitHub issues -- check there before assuming a local bug is n
 [#8](https://github.com/chipsxp/karaoke-events-one/issues/8)
 [#9](https://github.com/chipsxp/karaoke-events-one/issues/9)
 
-### ⚠️ Security note: ticket purchasing
-[Issue #10](https://github.com/chipsxp/karaoke-events-one/issues/10) documents
-that `checkoutOrder` (`lib/actions/order.actions.ts`) currently has no
-server-side auth check and trusts the client-supplied price/`isFree`/`buyerId`.
-Treat the checkout flow as **not production-safe** until that is fixed, and
-never introduce a local "skip auth" mode that touches this code path.
+**Status (Phase 0, 2026-11-19, branch `ui-work`):** #2, #3, #6, #7, #8, #9 and #10
+have been fixed. The PREVIEW MODE stubs (disabled Clerk auth / stubbed checkout)
+were reverted in the same pass. See
+`journal-history/PHASE0_STABILIZATION_SECURITY_JOURNAL.md` for details and
+`docs/STATUS_REPORT_AND_PLAN.md` for the full status report and forward plan.
+
+### ✅ Security note: ticket purchasing (fixed)
+[Issue #10](https://github.com/chipsxp/karaoke-events-one/issues/10) documented
+that `checkoutOrder` (`lib/actions/order.actions.ts`) previously had no
+server-side auth check and trusted the client-supplied price/`isFree`/`buyerId`.
+This is now fixed: the action accepts **only an `eventId`**, authenticates via
+Clerk `auth()`, and resolves buyer, title, price, and free/paid status from the
+database. Free tickets are recorded directly; paid tickets go through a Stripe
+Checkout session built from server-side data. Keep it that way -- never
+re-introduce client-supplied pricing or a local "skip auth" mode on this path.
 
 ---
 
