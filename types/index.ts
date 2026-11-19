@@ -1,6 +1,6 @@
 // ====== URL PARAMS
 export type SearchParamProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
@@ -282,12 +282,10 @@ export type CreateCategoryParams = {
 };
 
 // ====== ORDER PARAMS
+// Note (issue #10): checkoutOrder only accepts an eventId; price, buyer, and
+// free/paid status are resolved server-side from the database.
 export type CheckoutOrderParams = {
-  eventTitle: string;
   eventId: string;
-  price: string;
-  isFree: boolean;
-  buyerId: string;
 };
 
 export type CreateOrderParams = {

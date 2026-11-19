@@ -24,7 +24,7 @@ const Orders = async ({ searchParams }: SearchParamProps) => {
       <section className="wrapper overflow-x-auto">
         <table className="w-full border-collapse border-t">
           <thead>
-            <tr className="p-medium-14 border-b text-grey-500">
+            <tr className="p-medium-14 border-b text-gray-500">
               <th className="min-w-[250px] py-3 text-left">Order ID</th>
               <th className="min-w-[200px] flex-1 py-3 pr-4 text-left">
                 Event Title

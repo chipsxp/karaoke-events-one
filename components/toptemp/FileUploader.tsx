@@ -17,7 +17,7 @@ export function FileUploader({
   setFiles,
 }: FileUploaderProps) {
   return (
-    <div className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50">
+    <div className="flex-center flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-gray-50">
       {imageUrl ? (
         <div className="flex h-full w-full flex-1 justify-center ">
           <img
@@ -29,7 +29,7 @@ export function FileUploader({
           />
         </div>
       ) : (
-        <div className="flex-center flex-col py-5 text-grey-500">
+        <div className="flex-center flex-col py-5 text-gray-500">
           <Upload size={77} className="mb-2" aria-label="file upload" />
           <h3 className="mb-2 mt-2">Drag photo here</h3>
           <p className="p-medium-12 mb-4">SVG, PNG, JPG</p>

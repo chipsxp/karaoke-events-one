@@ -216,8 +216,8 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <MapPin className="text-grey-600 mr-2" size={24} />
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
+                    <MapPin className="text-gray-600 mr-2" size={24} />
 
                     <Input
                       placeholder="Event location or Online"
@@ -239,12 +239,12 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
                     <Calendar
-                      className="text-grey-600 mr-2 filter-grey"
+                      className="text-gray-600 mr-2 filter-gray"
                       size={24}
                     />
-                    <p className="ml-3 whitespace-nowrap text-grey-600">
+                    <p className="ml-3 whitespace-nowrap text-gray-600">
                       Start Date:
                     </p>
                     <DatePicker
@@ -268,12 +268,12 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
                     <Calendar
-                      className="text-grey-600 mr-2 filter-grey"
+                      className="text-gray-600 mr-2 filter-gray"
                       size={24}
                     />
-                    <p className="ml-3 whitespace-nowrap text-grey-600">
+                    <p className="ml-3 whitespace-nowrap text-gray-600">
                       End Date:
                     </p>
                     <DatePicker
@@ -299,16 +299,16 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
                     <DollarSign
-                      className="text-grey-600 mr-2 filter-grey"
+                      className="text-gray-600 mr-2 filter-gray"
                       size={24}
                     />
                     <Input
                       type="number"
                       placeholder="Price"
                       {...field}
-                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="p-regular-16 border-0 bg-gray-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     <FormField
                       control={form.control}
@@ -347,9 +347,9 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
                     <User
-                      className="text-grey-600 mr-2 filter-grey"
+                      className="text-gray-600 mr-2 filter-gray"
                       size={24}
                     />
                     <Input
@@ -357,7 +357,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                       placeholder="Capacity"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="p-regular-16 border-0 bg-gray-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
                 </FormControl>
@@ -373,8 +373,8 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <LinkIcon className="text-grey-600 mr-2" size={24} />
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
+                    <LinkIcon className="text-gray-600 mr-2" size={24} />
 
                     <Input
                       placeholder="URL"
@@ -393,7 +393,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex items-center space-x-3 px-4 py-2 rounded-full bg-grey-50 h-[54px]">
+                  <div className="flex items-center space-x-3 px-4 py-2 rounded-full bg-gray-50 h-[54px]">
                     <Checkbox
                       id="autoApprove"
                       checked={field.value}

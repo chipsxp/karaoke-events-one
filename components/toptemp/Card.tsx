@@ -1,6 +1,6 @@
 import { IEvent } from "@/lib/database/models/event.model";
 import { formatDateTime } from "@/lib/utils";
-// PREVIEW MODE (ui-work branch, revert before merging to main): auth() replaced with a stub below.
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import { DeleteConfirmation } from "./DeleteConfirmation";
@@ -14,9 +14,21 @@ type CardProps = {
 };
 
 const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
-  const userId: string | null = null; // PREVIEW MODE stub, was: (await auth()).sessionClaims?.userId
+  // Fail soft (issue #2): if Clerk auth cannot be resolved, render the card
+  // without creator controls instead of crashing the whole listing page.
+  let userId: string | undefined;
+  try {
+    const { sessionClaims } = await auth();
+    userId = sessionClaims?.userId as string | undefined;
+  } catch (error) {
+    console.error(
+      "[Card] Clerk auth unavailable; hiding creator controls.",
+      error
+    );
+  }
 
-  const isEventCreator = userId === event.organizer._id.toString();
+  const isEventCreator =
+    Boolean(userId) && userId === event.organizer._id.toString();
 
   return (
     <div className="group relative flex min-h-[420px] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 dark:bg-gray-800">
@@ -63,9 +75,11 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
           </span>
         </div>
 
-        {/* Creator Actions */}
+        {/* Creator Actions (issue #9: always visible on touch/small screens;
+            hover/focus reveal on desktop; bottom-right avoids overlapping the
+            category badge in the top-right corner) */}
         {isEventCreator && !hidePrice && (
-          <div className="absolute right-2 top-2 flex flex-col gap-2 rounded-xl bg-white/10 backdrop-blur-md p-2 shadow-lg opacity-0 transition-all duration-300 group-hover:opacity-100">
+          <div className="absolute bottom-2 right-2 z-10 flex flex-row gap-2 rounded-xl bg-black/40 backdrop-blur-md p-2 shadow-lg opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
             <EditEventButton eventId={event._id} />
             <DeleteConfirmation eventId={event._id} />
           </div>

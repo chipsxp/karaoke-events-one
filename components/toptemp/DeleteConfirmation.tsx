@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import { usePathname } from 'next/navigation'
-import Image from 'next/image'
+import { Trash2 } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -24,14 +24,17 @@ export const DeleteConfirmation = ({ eventId }: { eventId: string }) => {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
-        <Image src="/assets/icons/delete.svg" alt="edit" width={20} height={20} />
+      <AlertDialogTrigger
+        aria-label="Delete event"
+        className="rounded-lg bg-white/20 p-2 text-white transition-all hover:bg-white/30 hover:scale-110"
+      >
+        <Trash2 className="h-4 w-4" />
       </AlertDialogTrigger>
 
       <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure you want to delete?</AlertDialogTitle>
-          <AlertDialogDescription className="p-regular-16 text-grey-600">
+          <AlertDialogDescription className="p-regular-16 text-gray-600">
             This will permanently delete this event
           </AlertDialogDescription>
         </AlertDialogHeader>
