@@ -1,10 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import NavItems from "@/components/toptemp/NavItems";
 import MobileNav from "@/components/toptemp/MobileNav";
-// PREVIEW MODE (ui-work branch, revert before merging to main): AuthButtons/SignedIn/SignedOut/UserButton removed, no ClerkProvider available.
+import AuthButtons from "@/components/toptemp/AuthButtons";
+import { getUserById } from "@/lib/actions/user.actions";
 
-const Header = () => {
+const Header = async () => {
+  // Fail soft (issue #2): if Clerk auth cannot be resolved (misconfiguration
+  // or outage), render the signed-out header instead of crashing every page.
+  let userId: string | null = null;
+  try {
+    ({ userId } = await auth());
+  } catch (error) {
+    // Re-throw Next.js control-flow exceptions (e.g. DYNAMIC_SERVER_USAGE
+    // during static prerendering) — swallowing them corrupts the build.
+    if (error && typeof error === "object" && "digest" in error) {
+      throw error;
+    }
+    console.error(
+      "[Header] Clerk auth unavailable; falling back to signed-out navigation.",
+      error
+    );
+  }
+
+  // Resolve the viewer's role server-side (issue #8) so NavItems renders
+  // links immediately with no client-side fetch and no empty-nav flash.
+  let role: string | undefined;
+  if (userId) {
+    try {
+      const dbUser = await getUserById(userId);
+      role = dbUser?.role;
+    } catch (error) {
+      console.error(
+        "[Header] Could not load user role; showing default navigation.",
+        error
+      );
+    }
+  }
+
+  const isSignedIn = Boolean(userId);
+
   return (
     <header
       className="w-full border-b bg-cover bg-top relative animate-fade-in-up"
@@ -24,23 +61,27 @@ const Header = () => {
           />
         </Link>
 
-        {/* Wide Screen Navigation */}
-        <nav className="hidden md:flex md:flex-between w-full max-w-xs">
-          <NavItems />
+        {/* Wide Screen Navigation (issue #8: sizes to content, no max-w-xs clipping) */}
+        <nav className="hidden md:flex w-full max-w-none flex-1 justify-center">
+          <NavItems role={role} isSignedIn={isSignedIn} />
         </nav>
 
         {/* Clerk Auth Navigation with Mobile Navigation */}
         <div className="flex w-32 justify-end gap-3">
-          {/* PREVIEW MODE (ui-work branch, revert before merging to main): static stand-in for SignedIn/SignedOut/UserButton */}
-          <MobileNav />
-          <button
-            type="button"
-            disabled
-            className="button rounded-full px-4 py-2 text-sm opacity-60"
-            title="Sign in disabled in preview mode"
-          >
-            Sign In (preview)
-          </button>
+          <SignedIn>
+            <UserButton
+              signInUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-10 h-10 md:w-12 md:h-12", // 20% larger (from default ~8x8 to 10x10, md: 12x12)
+                },
+              }}
+            />
+          </SignedIn>
+          <MobileNav role={role} isSignedIn={isSignedIn} />
+          <SignedOut>
+            <AuthButtons />
+          </SignedOut>
         </div>
       </div>
     </header>

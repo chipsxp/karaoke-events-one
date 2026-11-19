@@ -10,8 +10,15 @@ import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import NavItems from "@/components/toptemp/NavItems";
 
+type MobileNavProps = {
+  /** Role resolved server-side in Header, forwarded to NavItems (issue #8). */
+  role?: string;
+  /** Whether the viewer is signed in (resolved server-side). */
+  isSignedIn?: boolean;
+};
+
 // MobileNav is shown on mobile only, hidden on greater 768px screen
-const MobileNav = () => {
+const MobileNav = ({ role, isSignedIn }: MobileNavProps) => {
   return (
     <nav className="md:hidden">
       <Sheet>
@@ -42,7 +49,7 @@ const MobileNav = () => {
               Karaoke-Events
             </SheetDescription>
             <Separator className="border border-gray-700" />
-            <NavItems />
+            <NavItems role={role} isSignedIn={isSignedIn} />
           </SheetHeader>
         </SheetContent>
       </Sheet>

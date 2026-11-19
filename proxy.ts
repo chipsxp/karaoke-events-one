@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-// PREVIEW MODE (ui-work branch, revert before merging to main): clerkMiddleware
-// disabled to match app/layout.tsx dropping ClerkProvider (no real Clerk instance yet).
-export default function middleware() {
-  return NextResponse.next();
-}
+const isDashboardRoute = createRouteMatcher(["/dashboard(.*)", "/events/create(.*)", "/orders(.*)", "/profile(.*)"]);
+
+export default clerkMiddleware(async (auth, req) => {
+  // Restrict dashboard routes to signed in users
+  if (isDashboardRoute(req)) await auth.protect();
+});
 
 export const config = {
   matcher: [

@@ -1,71 +1,55 @@
 "use client";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// PREVIEW MODE (ui-work branch, revert before merging to main): useAuth() replaced with a stub below (no ClerkProvider available).
-import { getUserById } from "@/lib/actions/user.actions";
 
-interface User {
-  role: string;
-}
+type NavLink = { label: string; route: string };
 
-const NavItems = () => {
+type NavItemsProps = {
+  /**
+   * Viewer role resolved server-side (in Header) from the database.
+   * Passing the role as a prop removes the client-side fetch that caused
+   * the flash-of-empty-nav (issue #8).
+   */
+  role?: string;
+  /** Whether the viewer is signed in (resolved server-side). */
+  isSignedIn?: boolean;
+};
+
+const baseLinks: NavLink[] = [{ label: "Home", route: "/" }];
+
+const roleLinks: Record<string, NavLink[]> = {
+  KJ: [
+    ...baseLinks,
+    { label: "Dashboard", route: "/dashboard" },
+    { label: "Create Event", route: "/events/create" },
+    { label: "My Profile", route: "/profile" },
+  ],
+  KS: [
+    ...baseLinks,
+    { label: "Dashboard", route: "/dashboard" },
+    { label: "Browse Events", route: "/events" },
+    { label: "My Profile", route: "/profile" },
+  ],
+  Promoter: [
+    ...baseLinks,
+    { label: "Dashboard", route: "/dashboard" },
+    { label: "My Profile", route: "/profile" },
+  ],
+};
+
+const NavItems = ({ role, isSignedIn = false }: NavItemsProps) => {
   const pathname = usePathname();
-  const userId: string | null = null; // PREVIEW MODE stub, was: const { userId } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (userId) {
-      getUserById(userId).then((userData) => {
-        setUser(userData);
-        setLoading(false);
-      }).catch(() => {
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  const getRoleBasedLinks = () => {
-    if (loading) return [];
-    
-    const baseLinks = [
-      { label: "Home", route: "/" },
-    ];
-
-    if (!user) {
-      return [...baseLinks];
-    }
-
-    const roleLinks = {
-      KJ: [
-        ...baseLinks,
-        { label: "Dashboard", route: "/dashboard" },
-        { label: "Create Event", route: "/events/create" },
-        { label: "My Profile", route: "/profile" },
-      ],
-      KS: [
-        ...baseLinks,
-        { label: "Dashboard", route: "/dashboard" },
-        { label: "Browse Events", route: "/events" },
-        { label: "My Profile", route: "/profile" },
-      ],
-      Promoter: [
-        ...baseLinks,
-        { label: "Dashboard", route: "/dashboard" },
-        { label: "My Profile", route: "/profile" },
-      ],
-    };
-
-    return roleLinks[user.role as keyof typeof roleLinks] || [...baseLinks, { label: "My Profile", route: "/profile" }];
-  };
-
-  const links = getRoleBasedLinks();
+  // Links are derived synchronously from server-provided data, so the nav
+  // is never empty while a client-side request resolves (issue #8).
+  const links: NavLink[] =
+    (role && roleLinks[role]) ||
+    (isSignedIn
+      ? [...baseLinks, { label: "My Profile", route: "/profile" }]
+      : baseLinks);
 
   return (
-    <ul className="md:flex-center md:flex-row w-full flex-col items-start gap-5">
+    <ul className="md:flex-center md:flex-row w-full flex-col items-start gap-5 md:w-auto md:flex-wrap">
       {links.map((link) => {
         const isActive = pathname === link.route;
         return (
