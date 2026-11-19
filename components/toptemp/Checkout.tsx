@@ -1,10 +1,12 @@
+"use client";
+
 import React, { useEffect } from "react";
 
-import { IEvent } from "@/lib/database/models/event.model";
+import type { IEvent } from "@/lib/database/models/event.model";
 import { Button } from "../ui/button";
-// PREVIEW MODE (ui-work branch, revert before merging to main): real Stripe checkoutOrder call disabled below.
+import { checkoutOrder } from "@/lib/actions/order.actions";
 
-const Checkout = ({ event, userId }: { event: IEvent; userId: string }) => {
+const Checkout = ({ event }: { event: IEvent }) => {
   useEffect(() => {
     // Check to see if this is a redirect back from Checkout
     const query = new URLSearchParams(window.location.search);
@@ -14,14 +16,16 @@ const Checkout = ({ event, userId }: { event: IEvent; userId: string }) => {
 
     if (query.get("canceled")) {
       console.log(
-        "Order canceled -- continue to shop around and checkout when you’re ready."
+        "Order canceled -- continue to shop around and checkout when you're ready."
       );
     }
   }, []);
 
   const onCheckout = async () => {
-    // PREVIEW MODE stub: pretend the purchase succeeded instead of calling Stripe.
-    alert(`Preview mode: pretend ${event.isFree ? "registration" : "purchase"} succeeded for "${event.title}". No real payment was made.`);
+    // Security (issue #10): only the eventId travels from the client.
+    // The buyer identity, title, price, and free/paid status are all
+    // resolved server-side inside the action from the database.
+    await checkoutOrder(event._id);
   };
 
   return (

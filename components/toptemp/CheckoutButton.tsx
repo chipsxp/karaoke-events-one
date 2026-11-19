@@ -1,12 +1,11 @@
 "use client";
 
-import { IEvent } from "@/lib/database/models/event.model";
-// PREVIEW MODE (ui-work branch, revert before merging to main): SignedIn/SignedOut/useUser removed, no ClerkProvider available.
+import type { IEvent } from "@/lib/database/models/event.model";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "../ui/button";
 import Checkout from "./Checkout";
 
 const CheckoutButton = ({ event }: { event: IEvent }) => {
-  const userId = "preview-user"; // PREVIEW MODE stub, was: useUser().user?.publicMetadata.userId
   const hasEventFinished = new Date(event.endDateTime) < new Date();
 
   return (
@@ -16,7 +15,21 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           Sorry, tickets are no longer available.
         </p>
       ) : (
-        <Checkout event={event} userId={userId} />
+        <>
+          <SignedOut>
+            <Button
+              onClick={() => (window.location.href = "/sign-in")}
+              className="button rounded-full"
+              size="lg"
+            >
+              Get Tickets
+            </Button>
+          </SignedOut>
+
+          <SignedIn>
+            <Checkout event={event} />
+          </SignedIn>
+        </>
       )}
     </div>
   );

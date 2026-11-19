@@ -1,8 +1,8 @@
 "use server";
 
 import Stripe from "stripe";
+import { auth } from "@clerk/nextjs/server";
 import {
-  CheckoutOrderParams,
   CreateOrderParams,
   GetOrdersByEventParams,
   GetOrdersByUserParams,
@@ -15,39 +15,83 @@ import Event from "../database/models/event.model";
 import { ObjectId } from "mongodb";
 import User from "../database/models/user.model";
 
-export const checkoutOrder = async (order: CheckoutOrderParams) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+/**
+ * Create a ticket checkout for an event (security fix for issue #10).
+ *
+ * Only the eventId is accepted from the client. The session is authenticated
+ * server-side via Clerk, and the buyer, event title, price, and free/paid
+ * status are all read from the database — client-supplied values are never
+ * trusted. Free tickets are recorded directly; paid tickets go through a
+ * Stripe Checkout session whose metadata is built from server-side data
+ * (consumed by the stripe webhook to create the Order).
+ */
+export const checkoutOrder = async (eventId: string) => {
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  const price = order.isFree ? 0 : Number(order.price) * 100;
+  if (!ObjectId.isValid(eventId)) throw new Error("Event not found");
 
-  try {
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            unit_amount: price,
-            product_data: {
-              name: order.eventTitle,
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        eventId: order.eventId,
-        buyerId: order.buyerId,
-      },
-      mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/profile`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/`,
-    });
+  await connectToDatabase();
 
-    redirect(session.url!);
-  } catch (error) {
-    throw error;
+  const [buyer, event] = await Promise.all([
+    User.findOne({ clerkId: userId }),
+    Event.findById(eventId),
+  ]);
+
+  if (!buyer) {
+    throw new Error(
+      "Buyer profile not found. Please complete sign-up and role selection first."
+    );
   }
+  if (!event) throw new Error("Event not found");
+  if (event.status === "cancelled") {
+    throw new Error("This event has been cancelled");
+  }
+
+  // Free ticket: no payment session needed — record the order directly.
+  if (event.isFree) {
+    await Order.create({
+      stripeId: `free-${event._id}-${buyer._id}-${Date.now()}`,
+      event: event._id,
+      buyer: buyer._id,
+      totalAmount: "0",
+      createdAt: new Date(),
+    });
+    redirect("/profile");
+  }
+
+  // Paid ticket: price comes from the database, never from the client.
+  const unitAmount = Math.round(Number(event.price) * 100);
+  if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
+    throw new Error("Event price is invalid; please contact the organizer");
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          unit_amount: unitAmount,
+          product_data: {
+            name: event.title,
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      eventId: event._id.toString(),
+      buyerId: buyer._id.toString(),
+    },
+    mode: "payment",
+    success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/profile`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/`,
+  });
+
+  redirect(session.url!);
 };
+
 
 export const createOrder = async (order: CreateOrderParams) => {
   try {
