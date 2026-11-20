@@ -1,6 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getUserById, createUser } from '@/lib/actions/user.actions';
+import { getUserById } from '@/lib/actions/user.actions';
 import KJDashboard from '@/components/dashboard/KJDashboard';
 import KSDashboard from '@/components/dashboard/KSDashboard';
 import PromoterDashboard from '@/components/dashboard/PromoterDashboard';
@@ -13,28 +13,12 @@ export default async function DashboardPage() {
     redirect('/sign-in');
   }
 
-  let dbUser = await getUserById(userId);
+  const dbUser = await getUserById(userId);
 
-  // Create user in database if they don't exist (fallback)
-  if (!dbUser) {
-    try {
-      dbUser = await createUser({
-        clerkId: userId,
-        email: user.emailAddresses[0]?.emailAddress || '',
-        username: user.username || `${user.firstName || ''}${user.lastName || ''}`,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        photo: user.imageUrl || '',
-        role: 'KS', // Default role, will be updated by role selection
-      });
-    } catch (error) {
-      console.error("Error creating user:", error);
-      redirect('/role-selection');
-    }
-  }
-
-  // If user exists but has no role, redirect to role selection
-  if (!dbUser.role) {
+  // Phase 1: no silent role fallback. Users must actively pick their role —
+  // the Clerk webhook creates them with a default "KS" role but
+  // roleSelected=false until they choose on /role-selection.
+  if (!dbUser || !dbUser.roleSelected) {
     redirect('/role-selection');
   }
 

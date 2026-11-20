@@ -17,6 +17,12 @@ const CreateEvent = async () => {
     redirect("/dashboard");
   }
 
+  // Chain of command (Phase 1): a KJ must be approved by a Promoter before
+  // creating events. The KJ dashboard shows the verification flow.
+  if (dbUser.kjVerificationStatus !== "verified") {
+    redirect("/dashboard");
+  }
+
   return (
     <>
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">

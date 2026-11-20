@@ -17,13 +17,14 @@ import * as z from "zod";
 import Dropdown from "./Dropdown";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "@/components/toptemp/FileUploader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapPin,
   Calendar,
   DollarSign,
   User,
   Link as LinkIcon,
+  Building2,
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 
@@ -31,6 +32,7 @@ import { useUploadThing } from "@/utils/uploadthing";
 import { Checkbox } from "../ui/checkbox";
 import { useRouter } from "next/navigation";
 import { createEvent, updateEvent } from "@/lib/actions/event.actions";
+import { getAllActiveVenues } from "@/lib/actions/venue.actions";
 import { IEvent } from "@/lib/database/models/event.model";
 
 type EventFormProps = {
@@ -42,6 +44,17 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  // Promoter-owned venues the KJ can pick as the event location (Phase 1)
+  const [venues, setVenues] = useState<
+    { _id: string; name: string; address: string }[]
+  >([]);
+
+  useEffect(() => {
+    getAllActiveVenues()
+      .then((data) => setVenues(Array.isArray(data) ? data : []))
+      .catch((error) => console.error("Failed to load venues:", error));
+  }, []);
+
   const initialValues: z.infer<typeof eventFormSchema> =
     event && type === "Update"
       ? {
@@ -57,6 +70,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           url: event.eventUrl || "",
           capacity: event.capacity,
           autoApprove: event.autoApprove ?? false,
+          venueId: event.venue?._id ?? "",
         }
       : {
           title: "",
@@ -71,6 +85,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
           url: "",
           capacity: 50,
           autoApprove: false,
+          venueId: "",
         };
   const router = useRouter();
 
@@ -202,6 +217,50 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                     imageUrl={field.value}
                     setFiles={setFiles}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-5 md:flex-row">
+          <FormField
+            control={form.control}
+            name="venueId"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormControl>
+                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
+                    <Building2 className="text-gray-600 mr-2" size={24} />
+                    <select
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const venueId = e.target.value;
+                        field.onChange(venueId);
+                        // Auto-fill the location from the selected venue
+                        const venue = venues.find((v) => v._id === venueId);
+                        if (venue) {
+                          form.setValue(
+                            "location",
+                            `${venue.name} — ${venue.address}`
+                          );
+                        }
+                      }}
+                      className="p-regular-16 w-full border-0 bg-gray-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      aria-label="Venue (Promoter-owned location)"
+                    >
+                      <option value="">
+                        No venue — enter a custom location below
+                      </option>
+                      {venues.map((venue) => (
+                        <option key={venue._id} value={venue._id}>
+                          {venue.name} — {venue.address}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

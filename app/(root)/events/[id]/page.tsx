@@ -48,10 +48,16 @@ const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
                 </div>
 
                 <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
-                  by{" "}
+                  Hosted by{" "}
                   <span className="text-primary-500">
-                    {event.organizer.firstName} {event.organizer.lastName}
-                  </span>
+                    {event.kj?.firstName} {event.kj?.lastName}
+                  </span>{" "}
+                  (KJ)
+                  {event.kj?.kjVerificationStatus === "verified" && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                      ✓ Verified KJ
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -81,7 +87,11 @@ const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
                   className="h-8 w-8 shrink-0 text-red-500"
                   aria-hidden="true"
                 />
-                <p className="p-medium-16 lg:p-regular-20">{event.location}</p>
+                <p className="p-medium-16 lg:p-regular-20">
+                  {event.venue
+                    ? `${event.venue.name} — ${event.venue.address}`
+                    : event.location}
+                </p>
               </div>
             </div>
 

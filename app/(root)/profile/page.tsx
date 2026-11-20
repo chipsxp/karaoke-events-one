@@ -106,14 +106,14 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
                     {user?.firstName} {user?.lastName}
                   </h1>
                   <p className="text-purple-600 mt-2 font-medium flex items-center gap-2">
-                    {user?.role === "KJ" && "Karaoke Jockey"}
+                    {user?.role === "KJ" && "Karaoke Jockey (KJ) · Event Host"}
                     {user?.role === "KS" && (
                       <>
                         <Mic className="h-5 w-5" />
                         Karaoke Singer
                       </>
                     )}
-                    {user?.role === "Promoter" && "Event Promoter"}
+                    {user?.role === "Promoter" && "Promoter · Venue Host"}
                   </p>
                   <div className="flex flex-wrap items-center mt-3 gap-2">
                     <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { DeleteConfirmation } from "./DeleteConfirmation";
 import EditEventButton from "./EditEventButton";
-import { Calendar, MapPin, Users, Music } from "lucide-react";
+import { Calendar, MapPin, Users, Music, ShieldCheck } from "lucide-react";
 
 type CardProps = {
   event: IEvent;
@@ -28,7 +28,7 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
   }
 
   const isEventCreator =
-    Boolean(userId) && userId === event.organizer._id.toString();
+    Boolean(userId) && userId === event.kj?._id?.toString();
 
   return (
     <div className="group relative flex min-h-[420px] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 dark:bg-gray-800">
@@ -124,21 +124,27 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
           </p>
         )}
 
-        {/* Organizer and Attendees */}
+        {/* KJ (event host/director) */}
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-linear-to-br from-purple-400 to-pink-500 flex items-center justify-center">
               <span className="text-xs font-bold text-white">
-                {event.organizer.firstName?.[0]}
-                {event.organizer.lastName?.[0]}
+                {event.kj?.firstName?.[0]}
+                {event.kj?.lastName?.[0]}
               </span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {event.organizer.firstName} {event.organizer.lastName}
+              <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                {event.kj?.firstName} {event.kj?.lastName}
+                {event.kj?.kjVerificationStatus === "verified" && (
+                  <ShieldCheck
+                    className="h-3.5 w-3.5 text-green-600"
+                    aria-label="Verified KJ"
+                  />
+                )}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Organizer
+                KJ · Event Host
               </p>
             </div>
           </div>

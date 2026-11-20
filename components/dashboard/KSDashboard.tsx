@@ -27,6 +27,7 @@ import {
   Clock
 } from "lucide-react"
 import Link from "next/link"
+import { getKSDashboardData } from "@/lib/actions/dashboard.actions"
 
 // Hide scrollbar but keep functionality
 const scrollbarHideStyles = `
@@ -109,33 +110,58 @@ const StatCard = ({
 export default function KSDashboard({ userId }: KSDashboardProps) {
   const { user } = useUser()
   const [stats, setStats] = useState<KSStats>({
-    totalEventsRegistered: 12,
-    totalEventsAttended: 10,
-    attendanceRate: 83.33,
-    thumbsUpCount: 47,
-    totalRatings: 8,
-    upcomingEvents: 3,
-    favoriteVenues: 5
+    totalEventsRegistered: 0,
+    totalEventsAttended: 0,
+    attendanceRate: 0,
+    thumbsUpCount: 0, // ratings wiring lands in Phase 2
+    totalRatings: 0,
+    upcomingEvents: 0,
+    favoriteVenues: 0
   })
 
-  const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([
-    {
-      _id: "1",
-      title: "Friday Night Karaoke Party",
-      startDateTime: "2024-01-19T20:00:00",
-      venue: "The Singing Spot",
-      attended: true,
-      rating: 5,
-      hostRating: 4.8
-    },
-    {
-      _id: "2",
-      title: "Weekend Vibes Karaoke",
-      startDateTime: "2024-01-20T19:30:00",
-      venue: "Melody Lounge",
-      attended: false
-    },
-  ])
+  const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([])
+
+  // Phase 1: load real data from the server actions instead of demo values
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      try {
+        const data = await getKSDashboardData(userId)
+        if (!active || !data) return
+        const registered = data.registeredEvents ?? 0
+        const attended = data.attendedEvents ?? 0
+        const upcoming: any[] = Array.isArray(data.upcomingRegistrations)
+          ? data.upcomingRegistrations
+          : []
+        setStats({
+          totalEventsRegistered: registered,
+          totalEventsAttended: attended,
+          attendanceRate:
+            registered > 0 ? Math.round((attended / registered) * 10000) / 100 : 0,
+          thumbsUpCount: 0,
+          totalRatings: 0,
+          upcomingEvents: upcoming.length,
+          favoriteVenues: new Set(
+            upcoming.map((r) => r?.eventId?.venue?.name).filter(Boolean)
+          ).size,
+        })
+        setRecentEvents(
+          upcoming.map((r) => ({
+            _id: r._id,
+            title: r.eventId?.title || "Event",
+            startDateTime: r.eventId?.startDateTime || "",
+            venue: r.eventId?.venue?.name || r.eventId?.location || "",
+            attended: r.status === "attended",
+          }))
+        )
+      } catch (error) {
+        console.error("Failed to load KS dashboard data:", error)
+      }
+    })()
+    return () => {
+      active = false
+    }
+  }, [userId])
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 

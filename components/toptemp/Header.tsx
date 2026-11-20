@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import NavItems from "@/components/toptemp/NavItems";
 import MobileNav from "@/components/toptemp/MobileNav";
 import AuthButtons from "@/components/toptemp/AuthButtons";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 import { getUserById } from "@/lib/actions/user.actions";
 
 const Header = async () => {
@@ -69,14 +70,17 @@ const Header = async () => {
         {/* Clerk Auth Navigation with Mobile Navigation */}
         <div className="flex w-32 justify-end gap-3">
           <SignedIn>
-            <UserButton
-              signInUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10 md:w-12 md:h-12", // 20% larger (from default ~8x8 to 10x10, md: 12x12)
-                },
-              }}
-            />
+            <div className="flex items-center gap-3">
+              {userId && <NotificationBell userId={userId} />}
+              <UserButton
+                signInUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10 md:w-12 md:h-12", // 20% larger (from default ~8x8 to 10x10, md: 12x12)
+                  },
+                }}
+              />
+            </div>
           </SignedIn>
           <MobileNav role={role} isSignedIn={isSignedIn} />
           <SignedOut>

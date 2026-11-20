@@ -25,25 +25,28 @@ export default function RoleSelection({ onComplete, userId: propUserId }: RoleSe
 
   const roles = [
     {
-      id: "KJ",
-      title: "Karaoke Host (KJ)",
-      description: "Create and manage karaoke events, approve registrations, and host singers",
-      icon: Mic,
-      features: ["Create Events", "Manage Registrations", "Host Events", "Rate Performances"]
+      id: "KS",
+      title: "Karaoke Singer (KS)",
+      description:
+        "The customer. Search events, grab a ticket (free or paid), and join once the event's KJ accepts your registration.",
+      icon: Music,
+      features: ["Search Events & Tickets", "Request to Sing", "KJ Approval per Event", "Track Your Events"]
     },
     {
-      id: "KS",
-      title: "Karaoke Singer",
-      description: "Discover events, register to sing, and connect with other singers",
-      icon: Music,
-      features: ["Browse Events", "Register to Sing", "Track Performances", "Get Rated"]
+      id: "KJ",
+      title: "Karaoke Jockey (KJ)",
+      description:
+        "The event host/director — like a DJ for karaoke. Runs the night and approves singers. Approved by a Promoter before hosting.",
+      icon: Mic,
+      features: ["Create & Run Events", "Approve Singers (KS)", "Manage Song Queue", "Promoter Approval Required"]
     },
     {
       id: "Promoter",
-      title: "Event Promoter",
-      description: "Promote events and help connect KJs with venues and audiences",
+      title: "Promoter (Venue Host)",
+      description:
+        "The location. You own or run the venue/business where events happen, and you approve the KJs who host them.",
       icon: Users,
-      features: ["Promote Events", "Manage Venues", "Connect KJs", "Marketing Tools"]
+      features: ["Manage Your Venues", "Approve KJs", "Host Events at Your Location", "Grow Your Business"]
     }
   ];
 

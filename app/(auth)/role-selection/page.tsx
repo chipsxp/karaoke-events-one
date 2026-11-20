@@ -11,10 +11,12 @@ const RoleSelectionPage = async () => {
     redirect("/sign-in");
   }
 
-  // Check if user already exists and has a role
+  // Check if the user already actively chose a role. (The Clerk webhook
+  // auto-creates users with a default "KS" role but roleSelected=false,
+  // so first-time users still land here to make their choice.)
   const existingUser = await getUserById(userId);
-  
-  if (existingUser && existingUser.role) {
+
+  if (existingUser && existingUser.roleSelected && existingUser.role) {
     // User already has a role, redirect to dashboard
     redirect("/dashboard");
   }
