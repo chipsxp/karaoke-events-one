@@ -363,6 +363,19 @@ were reverted in the same pass. See
 `journal-history/PHASE0_STABILIZATION_SECURITY_JOURNAL.md` for details and
 `docs/STATUS_REPORT_AND_PLAN.md` for the full status report and forward plan.
 
+**Status (Phase 1, 2026-11-20, branch `ui-work`):** role & chain-of-command
+correction implemented — canonical Promoter (venue owner) → KJ (event
+host/director) → KS (singer) model, `Event.host→kj` / `Event.organizer→promoter`
+renames, new Venue entity, Promoter-approves-KJ and KJ-approves-singer flows
+with notifications, real (non-mock) dashboards, and the repo's first test suite
+(`npm run test:phase1`). See
+`journal-history/PHASE1_ROLE_CHAIN_OF_COMMAND_JOURNAL.md`.
+
+⚠️ **Database migration required for Phase 1:** before running the new code
+against an existing database, run `npm run migrate:phase1` (uses `MONGODB_URI`
+from env or `.env.local`). It renames the event role fields and backfills the
+new user fields. It is idempotent and covered by `npm run test:migration`.
+
 ### ✅ Security note: ticket purchasing (fixed)
 [Issue #10](https://github.com/chipsxp/karaoke-events-one/issues/10) documented
 that `checkoutOrder` (`lib/actions/order.actions.ts`) previously had no
