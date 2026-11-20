@@ -6,8 +6,9 @@ import { connectToDatabase } from "@/lib/database";
 import Event from "@/lib/database/models/event.model";
 import EventRegistration from "@/lib/database/models/eventRegistration.model";
 import User from "@/lib/database/models/user.model";
+import Venue from "@/lib/database/models/venue.model";
 import Category from "@/lib/database/models/category.model";
-import { handleError } from "@/lib/utils";
+import { handleError, handleErrorThrow } from "@/lib/utils";
 
 import {
   CreateEventParams,
@@ -25,32 +26,66 @@ const getCategoryByName = async (name: string) => {
 const populateEvent = (query: any) => {
   return query
     .populate({
-      path: "organizer",
+      path: "kj",
+      model: User,
+      select: "_id firstName lastName kjVerificationStatus",
+    })
+    .populate({
+      path: "promoter",
       model: User,
       select: "_id firstName lastName",
+    })
+    .populate({
+      path: "venue",
+      model: Venue,
+      select: "_id name address",
     })
     .populate({ path: "category", model: Category, select: "_id name" });
 };
 
-// CREATE
+// CREATE — only verified KJs (event hosts/directors) may create events.
+// When a Venue is selected, the event's promoter is set to the venue owner.
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase();
 
-    const organizer = await User.findOne({ clerkId: userId });
-    if (!organizer) throw new Error("Organizer not found");
+    const kj = await User.findOne({ clerkId: userId });
+    if (!kj) throw new Error("User not found");
+    if (kj.role !== "KJ") {
+      throw new Error("Only KJs (event hosts) can create events");
+    }
+    if (kj.kjVerificationStatus !== "verified") {
+      throw new Error(
+        "Your KJ verification is still pending Promoter approval. You can create events once approved."
+      );
+    }
+
+    const { venueId, ...eventData } = event as any;
+
+    let venue: any = null;
+    let promoter: any = null;
+    if (venueId) {
+      venue = await Venue.findOne({ _id: venueId, isActive: true });
+      if (!venue) throw new Error("Selected venue not found or inactive");
+      promoter = venue.ownedBy;
+    }
 
     const newEvent = await Event.create({
-      ...event,
+      ...eventData,
       category: event.categoryId,
-      organizer: organizer._id,
-      host: organizer._id,
+      kj: kj._id,
+      promoter,
+      venue,
+      location:
+        event.location ||
+        (venue ? [venue.name, venue.address].filter(Boolean).join(" — ") : ""),
+      status: "published",
     });
     revalidatePath(path);
 
     return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -69,7 +104,7 @@ export async function getEventById(eventId: string) {
   }
 }
 
-// UPDATE
+// UPDATE — only the event's KJ may update it
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
     await connectToDatabase();
@@ -78,20 +113,36 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     if (!user) throw new Error("User not found");
 
     const eventToUpdate = await Event.findById(event._id);
-    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== user._id.toHexString()) {
+    if (!eventToUpdate || eventToUpdate.kj?.toHexString() !== user._id.toHexString()) {
       throw new Error("Unauthorized or event not found");
+    }
+
+    const { venueId, ...eventData } = event as any;
+    const updatePayload: any = { ...eventData, category: event.categoryId };
+
+    // Re-resolve venue/promoter when the venue selection changed
+    if (venueId !== undefined) {
+      if (venueId) {
+        const venue = await Venue.findOne({ _id: venueId, isActive: true });
+        if (!venue) throw new Error("Selected venue not found or inactive");
+        updatePayload.venue = venue._id;
+        updatePayload.promoter = venue.ownedBy;
+      } else {
+        updatePayload.venue = null;
+        updatePayload.promoter = null;
+      }
     }
 
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
-      { ...event, category: event.categoryId },
+      updatePayload,
       { new: true }
     );
     revalidatePath(path);
 
     return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -103,7 +154,7 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
     const deletedEvent = await Event.findByIdAndDelete(eventId);
     if (deletedEvent) revalidatePath(path);
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -127,6 +178,8 @@ export async function getAllEvents({
       $and: [
         titleCondition,
         categoryCondition ? { category: categoryCondition._id } : {},
+        // Discovery only shows live events (no drafts, no cancelled)
+        { status: { $nin: ["draft", "cancelled"] } },
       ],
     };
 
@@ -149,7 +202,7 @@ export async function getAllEvents({
   }
 }
 
-// GET EVENTS BY ORGANIZER
+// GET EVENTS BY USER (events the user is the KJ of)
 export async function getEventsByUser({
   userId,
   limit = 6,
@@ -167,7 +220,7 @@ export async function getEventsByUser({
       };
     }
 
-    const conditions = { organizer: user._id };
+    const conditions = { kj: user._id };
     const skipAmount = (page - 1) * limit;
 
     const eventsQuery = Event.find(conditions)
@@ -221,12 +274,15 @@ export async function getRelatedEventsByCategory({
   }
 }
 
-// GET EVENTS BY HOST (KJ Dashboard)
-export async function getEventsByHost(hostId: string) {
+// GET EVENTS BY KJ (KJ Dashboard) — accepts a Clerk id and resolves it
+export async function getEventsByKJ(kjClerkId: string) {
   try {
     await connectToDatabase();
 
-    const events = await populateEvent(Event.find({ host: hostId }))
+    const kj = await User.findOne({ clerkId: kjClerkId });
+    if (!kj) return [];
+
+    const events = await populateEvent(Event.find({ kj: kj._id }))
       .sort({ createdAt: -1 });
 
     return JSON.parse(JSON.stringify(events));
@@ -235,19 +291,27 @@ export async function getEventsByHost(hostId: string) {
   }
 }
 
-// GET EVENTS WITH REGISTRATION DETAILS (KJ Dashboard)
-export async function getEventsWithRegistrations(hostId: string) {
+// GET EVENTS WITH REGISTRATION DETAILS (KJ Dashboard) — accepts a Clerk id
+export async function getEventsWithRegistrations(kjClerkId: string) {
   try {
     await connectToDatabase();
 
-    const events = await Event.find({ host: hostId })
+    const kj = await User.findOne({ clerkId: kjClerkId });
+    if (!kj) return [];
+
+    const events = await Event.find({ kj: kj._id })
       .populate({
         path: 'category',
         model: Category,
         select: '_id name'
       })
       .populate({
-        path: 'host',
+        path: 'venue',
+        model: Venue,
+        select: '_id name address'
+      })
+      .populate({
+        path: 'kj',
         model: User,
         select: '_id firstName lastName'
       })
@@ -257,7 +321,7 @@ export async function getEventsWithRegistrations(hostId: string) {
     const eventsWithStats = await Promise.all(
       events.map(async (event) => {
         const stats = await EventRegistration.aggregate([
-          { $match: { eventId: event._id.toString() } },
+          { $match: { eventId: event._id } },
           {
             $group: {
               _id: null,
@@ -309,6 +373,6 @@ export async function updateEventStatus(eventId: string, status: 'draft' | 'publ
     revalidatePath('/');
     return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }

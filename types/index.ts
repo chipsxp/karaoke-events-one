@@ -127,10 +127,13 @@ export type User = {
   lastName: string;
   photoAvatar: string;
   role: 'KJ' | 'Promoter' | 'KS';
+  roleSelected?: boolean;
   isHost: boolean;
   isPromoter: boolean;
   kjVerificationStatus?: 'pending' | 'verified' | 'rejected';
   promoterVerificationStatus?: 'pending' | 'verified' | 'rejected';
+  verifiedBy?: string | null;
+  pendingVerification?: boolean;
   experience?: string;
   equipment?: string[];
   genres?: string[];
@@ -141,6 +144,38 @@ export type User = {
   profileCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+};
+
+// ====== VENUE (Promoter-owned location) ======
+export type Venue = {
+  _id: string;
+  name: string;
+  address: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  description?: string;
+  capacity?: number;
+  photos?: string[];
+  ownedBy: string | { _id: string; firstName: string; lastName: string };
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CreateVenueParams = {
+  promoterId: string; // Clerk id of the Promoter creating the venue
+  venue: {
+    name: string;
+    address: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    description?: string;
+    capacity?: number;
+    photos?: string[];
+  };
+  path?: string;
 };
 
 // ====== EVENT PARAMS
@@ -157,7 +192,9 @@ export type CreateEventParams = {
     price: string;
     isFree: boolean;
     url?: string;
-    
+    // Optional Venue (Promoter-owned location) the event takes place at
+    venueId?: string;
+
     // Enhanced fields for karaoke events
     capacity: number;
     registrationDeadline?: Date;
@@ -188,6 +225,8 @@ export type UpdateEventParams = {
     price: string;
     isFree: boolean;
     url?: string;
+    // Optional Venue (Promoter-owned location) the event takes place at
+    venueId?: string;
     
     // Enhanced fields for karaoke events
     capacity: number;
@@ -248,19 +287,28 @@ export type Event = {
     _id: string;
     name: string;
   };
-  organizer: {
+  // Promoter = venue owner / location host (nullable for legacy/free-location events)
+  promoter?: {
     _id: string;
     firstName: string;
     lastName: string;
     isPromoter: boolean;
-  };
-  host: {
+  } | null;
+  // KJ = Karaoke Jockey, the event host/director
+  kj: {
     _id: string;
     firstName: string;
     lastName: string;
     isHost: boolean;
+    kjVerificationStatus?: 'pending' | 'verified' | 'rejected';
   };
-  
+  // Physical venue (Promoter-owned), when the event has one
+  venue?: {
+    _id: string;
+    name: string;
+    address: string;
+  } | null;
+
   // Enhanced fields
   capacity: number;
   registrationDeadline?: Date;

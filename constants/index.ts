@@ -26,8 +26,7 @@ export const eventDefaultValues = {
   isFree: false,
   url: "",
   tickets: 0,
-  organizerId: "",
-  hostId: "",
+  venueId: "",
   capacity: 50,
   autoApprove: false,
 };

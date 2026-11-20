@@ -1,12 +1,34 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ObjectId } from "mongodb";
 import { connectToDatabase } from "../database";
 import EventRegistration from "../database/models/eventRegistration.model";
 import User from "../database/models/user.model";
 import Event from "../database/models/event.model";
 import { CreateEventRegistrationParams, UpdateEventRegistrationParams, GetEventRegistrationsParams } from "@/types";
-import { handleError } from "../utils";
+import { handleError, handleErrorThrow } from "../utils";
+import { createNotification } from "./notification.actions";
+
+// Ensure the given Clerk user is the KJ (event host/director) of the event
+// that owns this registration. Chain of command: only the KJ approves singers.
+async function assertIsEventKJ(registrationId: string, kjClerkId: string) {
+  const kj = await User.findOne({ clerkId: kjClerkId });
+  if (!kj) throw new Error("User not found");
+  if (kj.role !== "KJ") throw new Error("Only KJs can review registrations");
+
+  const registration = await EventRegistration.findById(registrationId);
+  if (!registration) throw new Error("Registration not found");
+
+  const event = await Event.findById(registration.eventId);
+  if (!event) throw new Error("Event not found");
+
+  if (event.kj?.toHexString() !== kj._id.toHexString()) {
+    throw new Error("Only the event's KJ can review its registrations");
+  }
+
+  return { kj, registration, event };
+}
 
 // Create a new event registration (interest or registration)
 export async function createEventRegistration({
@@ -57,7 +79,7 @@ export async function createEventRegistration({
     revalidatePath(`/events/${eventId}`);
     return JSON.parse(JSON.stringify(newRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -124,7 +146,7 @@ export async function updateEventRegistration({
     revalidatePath(`/events/${updatedRegistration.eventId}`);
     return JSON.parse(JSON.stringify(updatedRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -140,7 +162,7 @@ export async function deleteEventRegistration(registrationId: string) {
     revalidatePath(`/events/${deletedRegistration.eventId}`);
     return JSON.parse(JSON.stringify(deletedRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -185,8 +207,11 @@ export async function getEventRegistrationStats(eventId: string) {
   try {
     await connectToDatabase();
 
+    if (!ObjectId.isValid(eventId)) throw new Error("Invalid event id");
+
     const stats = await EventRegistration.aggregate([
-      { $match: { eventId: eventId } },
+      // eventId is stored as an ObjectId — match with the same type
+      { $match: { eventId: new ObjectId(eventId) } },
       {
         $group: {
           _id: null,
@@ -221,7 +246,7 @@ export async function getEventRegistrationStats(eventId: string) {
   }
 }
 
-// Approve a registration (KJ action)
+// Approve a registration (KJ-only, chain of command: KJ approves KS singers)
 export async function approveRegistration({
   registrationId,
   approvedBy,
@@ -232,15 +257,22 @@ export async function approveRegistration({
   try {
     await connectToDatabase();
 
-    // Find the user by clerkId to get the MongoDB ObjectId
-    const user = await User.findOne({ clerkId: approvedBy });
-    if (!user) throw new Error("User not found");
+    const { kj, event } = await assertIsEventKJ(registrationId, approvedBy);
+
+    // Capacity guard: don't over-approve past the event capacity
+    const approvedCount = await EventRegistration.countDocuments({
+      eventId: event._id,
+      status: { $in: ["approved", "attended"] },
+    });
+    if (event.capacity && approvedCount >= event.capacity) {
+      throw new Error("Event is at capacity");
+    }
 
     const updatedRegistration = await EventRegistration.findOneAndUpdate(
       { _id: registrationId },
       {
         status: 'approved',
-        approvedBy: user._id,
+        approvedBy: kj._id,
         approvedAt: new Date(),
       },
       { new: true }
@@ -248,19 +280,31 @@ export async function approveRegistration({
       .populate({
         path: 'userId',
         model: User,
-        select: 'firstName lastName emailId',
+        select: 'firstName lastName emailId clerkId',
       });
 
     if (!updatedRegistration) throw new Error("Registration not found");
 
+    // Notify the singer that the KJ approved them
+    const ksClerkId = (updatedRegistration.userId as any)?.clerkId;
+    if (ksClerkId) {
+      await createNotification({
+        userId: ksClerkId,
+        type: 'approval',
+        title: 'Registration approved',
+        message: `Your registration for "${event.title}" was approved by the KJ. See you there!`,
+        data: { eventId: event._id.toString() },
+      });
+    }
+
     revalidatePath(`/events/${updatedRegistration.eventId}`);
     return JSON.parse(JSON.stringify(updatedRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
-// Reject a registration (KJ action)
+// Reject a registration (KJ-only)
 export async function rejectRegistration({
   registrationId,
   approvedBy,
@@ -273,34 +317,49 @@ export async function rejectRegistration({
   try {
     await connectToDatabase();
 
-    // Find the user by clerkId to get the MongoDB ObjectId
-    const user = await User.findOne({ clerkId: approvedBy });
-    if (!user) throw new Error("User not found");
+    const { kj, event } = await assertIsEventKJ(registrationId, approvedBy);
 
     const updatedRegistration = await EventRegistration.findOneAndUpdate(
       { _id: registrationId },
       {
         status: 'rejected',
-        approvedBy: user._id,
+        approvedBy: kj._id,
         notes: notes,
         updatedAt: new Date(),
       },
       { new: true }
-    );
+    ).populate({
+      path: 'userId',
+      model: User,
+      select: 'firstName lastName emailId clerkId',
+    });
 
     if (!updatedRegistration) throw new Error("Registration not found");
+
+    const ksClerkId = (updatedRegistration.userId as any)?.clerkId;
+    if (ksClerkId) {
+      await createNotification({
+        userId: ksClerkId,
+        type: 'approval',
+        title: 'Registration update',
+        message: `Your registration for "${event.title}" was not approved by the KJ.${notes ? ` Reason: ${notes}` : ''}`,
+        data: { eventId: event._id.toString() },
+      });
+    }
 
     revalidatePath(`/events/${updatedRegistration.eventId}`);
     return JSON.parse(JSON.stringify(updatedRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
-// Mark attendance for a registration
-export async function markAttendance(registrationId: string) {
+// Mark attendance for a registration (KJ-only)
+export async function markAttendance(registrationId: string, kjClerkId: string) {
   try {
     await connectToDatabase();
+
+    await assertIsEventKJ(registrationId, kjClerkId);
 
     const updatedRegistration = await EventRegistration.findOneAndUpdate(
       { _id: registrationId },
@@ -312,11 +371,78 @@ export async function markAttendance(registrationId: string) {
     );
 
     if (!updatedRegistration) throw new Error("Registration not found");
-    
+
     revalidatePath(`/events/${updatedRegistration.eventId}`);
     return JSON.parse(JSON.stringify(updatedRegistration));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
+  }
+}
+
+/**
+ * Register a ticket holder for an event (Phase 1 chain of command).
+ * Called after a ticket is obtained — free checkout or Stripe webhook — so
+ * the KS lands in the KJ's approval queue (auto-approved when the event
+ * allows it). Idempotent via the (eventId, userId) unique index.
+ * Accepts Mongo ObjectId strings for event and buyer.
+ */
+export async function registerAttendeeFromTicket(eventId: string, buyerId: string) {
+  try {
+    await connectToDatabase();
+
+    if (!ObjectId.isValid(eventId) || !ObjectId.isValid(buyerId)) {
+      throw new Error("Invalid event or buyer id");
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) throw new Error("Event not found");
+
+    const status = event.autoApprove ? 'approved' : 'pending';
+
+    const registration = await EventRegistration.findOneAndUpdate(
+      { eventId: event._id, userId: buyerId },
+      {
+        $setOnInsert: {
+          eventId: event._id,
+          userId: buyerId,
+          registrationType: 'registered',
+          songRequests: [],
+          groupSize: 1,
+          registeredAt: new Date(),
+          createdAt: new Date(),
+        },
+        $set: {
+          status,
+          updatedAt: new Date(),
+          ...(status === 'approved' ? { approvedAt: new Date() } : {}),
+        },
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    // Notify the KJ that a singer needs approval
+    if (status === 'pending') {
+      const [kjUser, buyer] = await Promise.all([
+        User.findById(event.kj),
+        User.findById(buyerId),
+      ]);
+      if (kjUser && buyer) {
+        await createNotification({
+          userId: kjUser.clerkId,
+          type: 'registration',
+          title: 'New singer awaiting approval',
+          message: `${buyer.firstName} ${buyer.lastName || ''} got a ticket for "${event.title}". Review their registration in your KJ dashboard.`.trim(),
+          data: {
+            eventId: event._id.toString(),
+            registrationId: registration._id.toString(),
+          },
+        });
+      }
+    }
+
+    return JSON.parse(JSON.stringify(registration));
+  } catch (error) {
+    handleErrorThrow(error);
   }
 }
 
@@ -333,11 +459,18 @@ export async function getUserRegistrationsWithEvents(userId: string) {
       .populate({
         path: 'eventId',
         model: Event,
-        populate: {
-          path: 'host',
-          model: User,
-          select: 'firstName lastName',
-        }
+        populate: [
+          {
+            path: 'kj',
+            model: User,
+            select: 'firstName lastName',
+          },
+          {
+            path: 'venue',
+            model: 'Venue',
+            select: 'name address',
+          },
+        ],
       })
       .sort({ createdAt: -1 });
 

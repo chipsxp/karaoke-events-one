@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/database";
 import User from "@/lib/database/models/user.model";
-import { handleError } from "@/lib/utils";
+import { handleError, handleErrorThrow } from "@/lib/utils";
+import { createNotification } from "@/lib/actions/notification.actions";
 import { CreateUserParams, UpdateUserParams } from "@/types";
 
 export async function createUser(user: CreateUserParams) {
@@ -27,7 +28,11 @@ export async function createUser(user: CreateUserParams) {
       throw new Error("User already exists with this email");
     }
 
-    // Map role to isHost and isPromoter flags
+    // Map role to isHost and isPromoter flags.
+    // Chain of command (Phase 1): users created by the Clerk webhook have no
+    // role yet (roleSelected=false → the app routes them to /role-selection).
+    // KJs start 'pending' until a Promoter approves them; Promoters are the
+    // top of the chain (auto-verified); KSs are approved per-event by the KJ.
     const role = user.role || 'KS';
     const userData = {
       clerkId: user.clerkId,
@@ -37,8 +42,12 @@ export async function createUser(user: CreateUserParams) {
       lastName: user.lastName || '',
       photoAvatar: user.photo || 'default.png',
       role: role,
+      roleSelected: Boolean(user.role),
       isHost: role === 'KJ',
       isPromoter: role === 'Promoter',
+      kjVerificationStatus: 'pending',
+      promoterVerificationStatus: 'verified',
+      pendingVerification: role === 'KJ',
     };
 
     const newUser = await User.create(userData);
@@ -124,11 +133,25 @@ export async function updateUserRole(clerkId: string, role: 'KJ' | 'KS' | 'Promo
     if (!clerkId) throw new Error("clerkId is required");
     if (!role) throw new Error("role is required");
 
-    const updateData = {
+    const updateData: any = {
       role,
+      roleSelected: true,
       isHost: role === 'KJ',
       isPromoter: role === 'Promoter',
     };
+
+    // Chain of command: switching to KJ (re-)enters the Promoter approval
+    // queue; Promoters are top of chain; KSs need no account-level approval.
+    if (role === 'KJ') {
+      updateData.kjVerificationStatus = 'pending';
+      updateData.pendingVerification = true;
+      updateData.verifiedBy = null;
+    } else if (role === 'Promoter') {
+      updateData.promoterVerificationStatus = 'verified';
+      updateData.pendingVerification = false;
+    } else {
+      updateData.pendingVerification = false;
+    }
 
     const updatedUser = await User.findOneAndUpdate(
       { clerkId },
@@ -141,7 +164,7 @@ export async function updateUserRole(clerkId: string, role: 'KJ' | 'KS' | 'Promo
     revalidatePath('/dashboard');
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -219,6 +242,7 @@ export async function submitKJVerification(userId: string, verificationData: {
       {
         ...verificationData,
         kjVerificationStatus: 'pending',
+        pendingVerification: true,
         role: 'KJ',
         isHost: true,
         profileCompleted: true,
@@ -231,7 +255,7 @@ export async function submitKJVerification(userId: string, verificationData: {
     revalidatePath("/");
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
@@ -242,11 +266,15 @@ export async function submitPromoterVerification(userId: string, verificationDat
   try {
     await connectToDatabase();
 
+    // Promoters are the top of the chain of command (they approve KJs), so
+    // submitting venue details records their business info and keeps them
+    // 'verified' rather than queueing them for an approval nobody can give.
     const updatedUser = await User.findOneAndUpdate(
       { clerkId: userId },
       {
         ...verificationData,
-        promoterVerificationStatus: 'pending',
+        promoterVerificationStatus: 'verified',
+        pendingVerification: false,
         role: 'Promoter',
         isPromoter: true,
         profileCompleted: true,
@@ -259,51 +287,88 @@ export async function submitPromoterVerification(userId: string, verificationDat
     revalidatePath("/");
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
-export async function approveKJVerification(userId: string) {
+/**
+ * Approve a KJ (chain of command: Promoter → KJ).
+ * Only a verified Promoter may approve; records who approved via verifiedBy
+ * and notifies the KJ.
+ */
+export async function approveKJVerification(kjClerkId: string, approverClerkId: string) {
   try {
     await connectToDatabase();
 
+    const approver = await User.findOne({ clerkId: approverClerkId });
+    if (!approver || approver.role !== 'Promoter' || approver.promoterVerificationStatus !== 'verified') {
+      throw new Error("Only verified Promoters can approve KJs");
+    }
+
     const updatedUser = await User.findOneAndUpdate(
-      { clerkId: userId },
+      { clerkId: kjClerkId, role: 'KJ' },
       {
         kjVerificationStatus: 'verified',
+        pendingVerification: false,
+        verifiedBy: approver._id,
         updatedAt: new Date(),
       },
       { new: true }
     );
 
-    if (!updatedUser) throw new Error("User not found");
+    if (!updatedUser) throw new Error("KJ not found");
 
-    revalidatePath("/");
+    await createNotification({
+      userId: kjClerkId,
+      type: 'approval',
+      title: 'KJ verification approved',
+      message: `Congratulations! ${approver.firstName} ${approver.lastName || ''} (Promoter) approved your KJ verification. You can now create and host karaoke events.`.trim(),
+      data: { approvedBy: approver._id.toString() },
+    });
+
+    revalidatePath("/dashboard");
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 
-export async function rejectKJVerification(userId: string) {
+/**
+ * Reject a KJ verification (chain of command: Promoter → KJ).
+ */
+export async function rejectKJVerification(kjClerkId: string, approverClerkId: string, notes?: string) {
   try {
     await connectToDatabase();
 
+    const approver = await User.findOne({ clerkId: approverClerkId });
+    if (!approver || approver.role !== 'Promoter' || approver.promoterVerificationStatus !== 'verified') {
+      throw new Error("Only verified Promoters can review KJs");
+    }
+
     const updatedUser = await User.findOneAndUpdate(
-      { clerkId: userId },
+      { clerkId: kjClerkId, role: 'KJ' },
       {
         kjVerificationStatus: 'rejected',
+        pendingVerification: false,
         updatedAt: new Date(),
       },
       { new: true }
     );
 
-    if (!updatedUser) throw new Error("User not found");
+    if (!updatedUser) throw new Error("KJ not found");
 
-    revalidatePath("/");
+    await createNotification({
+      userId: kjClerkId,
+      type: 'approval',
+      title: 'KJ verification update',
+      message: `Your KJ verification was not approved by ${approver.firstName} ${approver.lastName || ''} (Promoter).${notes ? ` Reason: ${notes}` : ''} You can update your experience and equipment in your profile and request verification again.`,
+      data: { rejectedBy: approver._id.toString(), notes },
+    });
+
+    revalidatePath("/dashboard");
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
-    handleError(error);
+    handleErrorThrow(error);
   }
 }
 

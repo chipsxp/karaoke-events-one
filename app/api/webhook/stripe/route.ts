@@ -1,6 +1,7 @@
 import stripe from "stripe";
 import { NextResponse } from "next/server";
 import { createOrder } from "@/lib/actions/order.actions";
+import { registerAttendeeFromTicket } from "@/lib/actions/eventRegistration.actions";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -32,6 +33,20 @@ export async function POST(request: Request) {
     };
 
     const newOrder = await createOrder(order);
+
+    // Chain of command (Phase 1): a purchased ticket puts the singer into the
+    // event KJ's approval queue (auto-approved when the event allows it).
+    // metadata.buyerId is the Mongo _id set server-side by checkoutOrder.
+    if (metadata?.eventId && metadata?.buyerId) {
+      try {
+        await registerAttendeeFromTicket(metadata.eventId, metadata.buyerId);
+      } catch (regError) {
+        // Never fail the webhook (and risk Stripe retries) because the
+        // registration side-effect failed; the order itself is recorded.
+        console.error("[stripe-webhook] registration failed:", regError);
+      }
+    }
+
     return NextResponse.json({ message: "OK", order: newOrder });
   }
 

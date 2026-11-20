@@ -19,4 +19,6 @@ export const eventFormSchema = z.object({
   url: z.url(),
   capacity: z.number().min(1, "Capacity must be at least 1"),
   autoApprove: z.boolean(),
+  // Optional Promoter-owned venue; when set, location auto-fills from it
+  venueId: z.string().optional(),
 });

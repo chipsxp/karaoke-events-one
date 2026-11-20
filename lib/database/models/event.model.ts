@@ -1,6 +1,13 @@
 import { model, models, Schema } from "mongoose";
 
-// Model design for events base on Schema through interface
+// Model design for events.
+//
+// Phase 1 canonical role vocabulary:
+//   kj       -> the Karaoke Jockey: event host/director who runs the night
+//               and approves singer (KS) registrations. Requires Promoter approval.
+//   promoter -> the Promoter: venue owner/location host (optional on an event;
+//               set automatically when the event references a Venue).
+//   venue    -> the physical location (owned by a Promoter), when known.
 export interface IEvent {
   _id: string;
   title: string;
@@ -15,10 +22,11 @@ export interface IEvent {
   isFree: boolean;
   eventUrl: string;
   category: { _id: string; name: string };
-  organizer: { _id: string; firstName: string; lastName: string; isPromoter: boolean };
-  host: { _id: string; firstName: string; lastName: string; isHost: boolean };
-  
-  // New fields for enhanced event management
+  promoter?: { _id: string; firstName: string; lastName: string; isPromoter: boolean } | null;
+  kj: { _id: string; firstName: string; lastName: string; isHost: boolean; kjVerificationStatus?: string };
+  venue?: { _id: string; name: string; address: string } | null;
+
+  // Enhanced event management fields
   capacity: number;
   registrationDeadline: Date;
   autoApprove: boolean;
@@ -47,23 +55,27 @@ const EventSchema = new Schema({
   isFree: { type: Boolean, default: false },
   eventUrl: { type: String },
   category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
-  organizer: { type: Schema.Types.ObjectId, ref: "User" },
-  host: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  
-  // New fields for enhanced event management
+  // Promoter = venue owner/location host (optional; derived from venue when set)
+  promoter: { type: Schema.Types.ObjectId, ref: "User", default: null },
+  // KJ = Karaoke Jockey, the event host/director (required)
+  kj: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  // Physical venue (owned by a Promoter), when the event has one
+  venue: { type: Schema.Types.ObjectId, ref: "Venue", default: null },
+
+  // Enhanced event management fields
   capacity: { type: Number, required: true, min: 1 },
   registrationDeadline: { type: Date },
   autoApprove: { type: Boolean, default: false },
   equipment: [{ type: String }], // KJ's available equipment
   songList: [{ type: String }], // Available songs for the event
-  
+
   registrationSettings: {
     allowGroupRegistration: { type: Boolean, default: true },
     maxGroupSize: { type: Number, default: 5, min: 1, max: 20 },
     requireSongRequests: { type: Boolean, default: false },
     allowSongRequests: { type: Boolean, default: true },
   },
-  
+
   status: {
     type: String,
     enum: ['draft', 'published', 'cancelled', 'completed'],
@@ -72,7 +84,9 @@ const EventSchema = new Schema({
 });
 
 // Indexes for better query performance
-EventSchema.index({ host: 1, status: 1 });
+EventSchema.index({ kj: 1, status: 1 });
+EventSchema.index({ promoter: 1, status: 1 });
+EventSchema.index({ venue: 1, startDateTime: 1 });
 EventSchema.index({ startDateTime: 1, status: 1 });
 EventSchema.index({ category: 1, startDateTime: 1 });
 

@@ -14,6 +14,7 @@ import Order from "../database/models/order.model";
 import Event from "../database/models/event.model";
 import { ObjectId } from "mongodb";
 import User from "../database/models/user.model";
+import { registerAttendeeFromTicket } from "./eventRegistration.actions";
 
 /**
  * Create a ticket checkout for an event (security fix for issue #10).
@@ -48,7 +49,8 @@ export const checkoutOrder = async (eventId: string) => {
     throw new Error("This event has been cancelled");
   }
 
-  // Free ticket: no payment session needed — record the order directly.
+  // Free ticket: no payment session needed — record the order directly,
+  // then put the singer in the KJ's approval queue (chain of command).
   if (event.isFree) {
     await Order.create({
       stripeId: `free-${event._id}-${buyer._id}-${Date.now()}`,
@@ -57,6 +59,7 @@ export const checkoutOrder = async (eventId: string) => {
       totalAmount: "0",
       createdAt: new Date(),
     });
+    await registerAttendeeFromTicket(event._id.toString(), buyer._id.toString());
     redirect("/profile");
   }
 
@@ -195,7 +198,7 @@ export async function getOrdersByUser({
         path: "event",
         model: Event,
         populate: {
-          path: "organizer",
+          path: "kj",
           model: User,
           select: "_id firstName lastName",
         },

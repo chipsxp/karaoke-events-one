@@ -4,91 +4,101 @@ import { connectToDatabase } from "../database";
 import Event from "../database/models/event.model";
 import EventRegistration from "../database/models/eventRegistration.model";
 import User from "../database/models/user.model";
+import Venue from "../database/models/venue.model";
 import { handleError } from "../utils";
 
-// KJ Dashboard Actions
+// All dashboard actions accept a CLERK user id and resolve it to the Mongo
+// ObjectId internally. (Earlier versions queried ObjectId fields with the
+// Clerk id directly, so every count silently returned zero.)
 
-// Get KJ dashboard overview data
-export async function getKJDashboardData(kjId: string) {
+async function resolveUserByClerkId(clerkId: string) {
+  await connectToDatabase();
+  return User.findOne({ clerkId });
+}
+
+// ===== KJ Dashboard (event host/director) =====
+
+export async function getKJDashboardData(kjClerkId: string) {
   try {
-    await connectToDatabase();
+    const kj = await resolveUserByClerkId(kjClerkId);
+    if (!kj) {
+      return {
+        totalEvents: 0,
+        pendingRegistrations: 0,
+        upcomingEvents: 0,
+        recentRegistrations: [],
+      };
+    }
 
-    const [
-      totalEvents,
-      pendingRegistrations,
-      upcomingEvents,
-      recentRegistrations
-    ] = await Promise.all([
-      // Total events created by KJ
-      Event.countDocuments({ host: kjId }),
-      
-      // Pending registrations across all KJ events
-      EventRegistration.countDocuments({
-        eventId: { $in: await Event.find({ host: kjId }).distinct('_id') },
-        status: 'pending'
-      }),
-      
-      // Upcoming events
-      Event.countDocuments({
-        host: kjId,
-        startDateTime: { $gte: new Date() },
-        status: 'published'
-      }),
-      
-      // Recent registrations (last 7 days)
-      EventRegistration.find({
-        eventId: { $in: await Event.find({ host: kjId }).distinct('_id') },
-        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-      })
-      .populate({
-        path: 'userId',
-        model: User,
-        select: 'firstName lastName photoAvatar'
-      })
-      .populate({
-        path: 'eventId',
-        model: Event,
-        select: 'title startDateTime'
-      })
-      .sort({ createdAt: -1 })
-      .limit(10)
-    ]);
+    const eventIds = await Event.find({ kj: kj._id }).distinct("_id");
+
+    const [totalEvents, pendingRegistrations, upcomingEvents, recentRegistrations] =
+      await Promise.all([
+        Event.countDocuments({ kj: kj._id }),
+        EventRegistration.countDocuments({
+          eventId: { $in: eventIds },
+          status: "pending",
+        }),
+        Event.countDocuments({
+          kj: kj._id,
+          startDateTime: { $gte: new Date() },
+          status: "published",
+        }),
+        EventRegistration.find({
+          eventId: { $in: eventIds },
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        })
+          .populate({
+            path: "userId",
+            model: User,
+            select: "firstName lastName photoAvatar",
+          })
+          .populate({
+            path: "eventId",
+            model: Event,
+            select: "title startDateTime",
+          })
+          .sort({ createdAt: -1 })
+          .limit(10),
+      ]);
 
     return {
       totalEvents,
       pendingRegistrations,
       upcomingEvents,
-      recentRegistrations: JSON.parse(JSON.stringify(recentRegistrations))
+      recentRegistrations: JSON.parse(JSON.stringify(recentRegistrations)),
     };
   } catch (error) {
     handleError(error);
   }
 }
 
-// Get detailed registration queue for KJ
-export async function getKJRegistrationQueue(kjId: string) {
+// Detailed pending-registration queue for the KJ (singers awaiting approval)
+export async function getKJRegistrationQueue(kjClerkId: string) {
   try {
-    await connectToDatabase();
+    const kj = await resolveUserByClerkId(kjClerkId);
+    if (!kj) return [];
 
-    const events = await Event.find({ host: kjId })
-      .select('_id title startDateTime')
+    const events = await Event.find({ kj: kj._id })
+      .select("_id title startDateTime")
       .sort({ startDateTime: 1 });
 
     const registrations = await EventRegistration.find({
-      eventId: { $in: events.map(e => e._id) },
-      status: 'pending'
+      eventId: { $in: events.map((e) => e._id) },
+      status: "pending",
     })
-    .populate({
-      path: 'userId',
-      model: User,
-      select: 'firstName lastName emailId photoAvatar vocalRange preferredGenres'
-    })
-    .populate({
-      path: 'eventId',
-      model: Event,
-      select: 'title startDateTime capacity'
-    })
-    .sort({ createdAt: -1 });
+      .populate({
+        path: "userId",
+        model: User,
+        select:
+          "firstName lastName emailId photoAvatar vocalRange preferredGenres",
+      })
+      .populate({
+        path: "eventId",
+        model: Event,
+        select: "title startDateTime capacity",
+      })
+      .sort({ createdAt: -1 });
 
     return JSON.parse(JSON.stringify(registrations));
   } catch (error) {
@@ -96,84 +106,81 @@ export async function getKJRegistrationQueue(kjId: string) {
   }
 }
 
-// KS Dashboard Actions
+// ===== KS Dashboard (singer/customer) =====
 
-// Get KS dashboard data
-export async function getKSDashboardData(ksId: string) {
+export async function getKSDashboardData(ksClerkId: string) {
   try {
-    await connectToDatabase();
+    const ks = await resolveUserByClerkId(ksClerkId);
+    if (!ks) {
+      return {
+        registeredEvents: 0,
+        interestedEvents: 0,
+        attendedEvents: 0,
+        upcomingRegistrations: [],
+      };
+    }
 
-    const [
-      registeredEvents,
-      interestedEvents,
-      attendedEvents,
-      upcomingRegistrations
-    ] = await Promise.all([
-      // Events where KS is registered
-      EventRegistration.countDocuments({
-        userId: ksId,
-        registrationType: 'registered',
-        status: { $in: ['approved', 'pending'] }
-      }),
-      
-      // Events where KS marked as interested
-      EventRegistration.countDocuments({
-        userId: ksId,
-        registrationType: 'interested'
-      }),
-      
-      // Events attended by KS
-      EventRegistration.countDocuments({
-        userId: ksId,
-        status: 'attended'
-      }),
-      
-      // Upcoming registered events
-      EventRegistration.find({
-        userId: ksId,
-        registrationType: 'registered',
-        status: 'approved'
-      })
-      .populate({
-        path: 'eventId',
-        model: Event,
-        populate: [
-          { path: 'category', model: 'Category', select: 'name' },
-          { path: 'host', model: 'User', select: 'firstName lastName' }
-        ]
-      })
-      .sort({ 'eventId.startDateTime': 1 })
-      .limit(5)
-    ]);
+    const [registeredEvents, interestedEvents, attendedEvents, upcomingRegistrations] =
+      await Promise.all([
+        EventRegistration.countDocuments({
+          userId: ks._id,
+          registrationType: "registered",
+          status: { $in: ["approved", "pending", "attended"] },
+        }),
+        EventRegistration.countDocuments({
+          userId: ks._id,
+          registrationType: "interested",
+        }),
+        EventRegistration.countDocuments({
+          userId: ks._id,
+          status: "attended",
+        }),
+        EventRegistration.find({
+          userId: ks._id,
+          registrationType: "registered",
+          status: { $in: ["approved", "pending"] },
+        })
+          .populate({
+            path: "eventId",
+            model: Event,
+            populate: [
+              { path: "category", model: "Category", select: "name" },
+              { path: "kj", model: "User", select: "firstName lastName" },
+              { path: "venue", model: "Venue", select: "name address" },
+            ],
+          })
+          .sort({ createdAt: -1 })
+          .limit(5),
+      ]);
 
     return {
       registeredEvents,
       interestedEvents,
       attendedEvents,
-      upcomingRegistrations: JSON.parse(JSON.stringify(upcomingRegistrations))
+      upcomingRegistrations: JSON.parse(JSON.stringify(upcomingRegistrations)),
     };
   } catch (error) {
     handleError(error);
   }
 }
 
-// Get KS event history
-export async function getKSEventHistory(ksId: string) {
+// KS event history (all registrations, newest first)
+export async function getKSEventHistory(ksClerkId: string) {
   try {
-    await connectToDatabase();
+    const ks = await resolveUserByClerkId(ksClerkId);
+    if (!ks) return [];
 
-    const registrations = await EventRegistration.find({
-      userId: ksId
-    })
-    .populate({
-      path: 'eventId',
-      model: Event,
-      populate: [
-        { path: 'category', model: 'Category', select: 'name' },
-        { path: 'host', model: 'User', select: 'firstName lastName' }
-      ]
-    })
-    .sort({ createdAt: -1 });
+    const registrations = await EventRegistration.find({ userId: ks._id })
+      .populate({
+        path: "eventId",
+        model: Event,
+        populate: [
+          { path: "category", model: "Category", select: "name" },
+          { path: "kj", model: "User", select: "firstName lastName" },
+          { path: "venue", model: "Venue", select: "name address" },
+        ],
+      })
+      .sort({ createdAt: -1 });
 
     return JSON.parse(JSON.stringify(registrations));
   } catch (error) {
@@ -181,26 +188,46 @@ export async function getKSEventHistory(ksId: string) {
   }
 }
 
-// Get interested events for KS
-export async function getKSInterestedEvents(ksId: string) {
+// ===== Promoter Dashboard (venue owner / top of chain of command) =====
+
+export async function getPromoterDashboardData(promoterClerkId: string) {
   try {
-    await connectToDatabase();
+    const promoter = await resolveUserByClerkId(promoterClerkId);
+    if (!promoter) {
+      return {
+        totalVenues: 0,
+        pendingKJs: 0,
+        upcomingEventsAtVenues: 0,
+        totalEventsAtVenues: 0,
+      };
+    }
 
-    const registrations = await EventRegistration.find({
-      userId: ksId,
-      registrationType: 'interested'
-    })
-    .populate({
-      path: 'eventId',
-      model: Event,
-      populate: [
-        { path: 'category', model: 'Category', select: 'name' },
-        { path: 'host', model: 'User', select: 'firstName lastName' }
-      ]
-    })
-    .sort({ createdAt: -1 });
+    const venueIds = await Venue.find({
+      ownedBy: promoter._id,
+      isActive: true,
+    }).distinct("_id");
 
-    return JSON.parse(JSON.stringify(registrations));
+    const [totalVenues, pendingKJs, upcomingEventsAtVenues, totalEventsAtVenues] =
+      await Promise.all([
+        Venue.countDocuments({ ownedBy: promoter._id, isActive: true }),
+        User.countDocuments({
+          role: "KJ",
+          kjVerificationStatus: "pending",
+        }),
+        Event.countDocuments({
+          venue: { $in: venueIds },
+          startDateTime: { $gte: new Date() },
+          status: "published",
+        }),
+        Event.countDocuments({ venue: { $in: venueIds } }),
+      ]);
+
+    return {
+      totalVenues,
+      pendingKJs,
+      upcomingEventsAtVenues,
+      totalEventsAtVenues,
+    };
   } catch (error) {
     handleError(error);
   }

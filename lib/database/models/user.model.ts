@@ -17,8 +17,13 @@ export const UserSchema = new Schema({
     default: "KS",
   },
 
-  // KJ specific fields (isHost)
-  isHost: { type: Boolean, default: false }, // This is the KJ role
+  // True once the user actively picked a role in /role-selection.
+  // Users auto-created by the Clerk webhook start with role "KS" but
+  // roleSelected=false so the app routes them to role selection first.
+  roleSelected: { type: Boolean, default: false },
+
+  // KJ specific fields (KJ = event host/director, approved by a Promoter)
+  isHost: { type: Boolean, default: false }, // Legacy flag mirroring role === "KJ"
   kjVerificationStatus: {
     type: String,
     enum: ["pending", "verified", "rejected"],
@@ -28,15 +33,21 @@ export const UserSchema = new Schema({
   equipment: [{ type: String }], // KJ's karaoke equipment
   genres: [{ type: String }], // KJ's preferred genres
 
-  // Promoter specific fields
+  // Promoter specific fields (Promoter = venue owner/location host, top of chain)
   isPromoter: { type: Boolean, default: false },
   promoterVerificationStatus: {
     type: String,
     enum: ["pending", "verified", "rejected"],
-    default: "pending",
+    default: "verified", // Promoters are the top of the chain of command (admin)
   },
-  venues: [{ type: String }], // Promoter's managed venues
+  venues: [{ type: String }], // Legacy free-text venue names (see Venue model)
   promotionExperience: { type: String },
+
+  // Chain of command (Phase 1): who approved this user, and whether an
+  // approval is currently pending. KJs are approved by Promoters;
+  // KSs are approved per-event by the KJ via EventRegistration.
+  verifiedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+  pendingVerification: { type: Boolean, default: false },
 
   // KS specific fields
   vocalRange: { type: String }, // KS vocal range
