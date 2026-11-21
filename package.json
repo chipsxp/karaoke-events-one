@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "migrate:phase1": "node scripts/migrate-phase1.mjs",
+    "seed:demo": "tsx scripts/seed-demo.ts",
     "test:migration": "node tests/migration.test.mjs",
     "test:chain": "tsx tests/chain-of-command.test.ts",
-    "test:phase1": "npm run test:migration && npm run test:chain"
+    "test:seed": "tsx tests/seed.test.ts",
+    "test:phase1": "npm run test:migration && npm run test:chain && npm run test:seed"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.35.2",
@@ -64,5 +66,8 @@
   "overrides": {
     "effect": "3.22.5",
     "@effect/platform": "0.97.4"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
