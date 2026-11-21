@@ -7,7 +7,7 @@ import {
 import { formatDateTime } from "@/lib/utils";
 import { SearchParamProps } from "@/types";
 import Image from "next/image";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Music } from "lucide-react";
 
 const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
   const { id } = await params;
@@ -25,13 +25,21 @@ const EventDetails = async ({ params, searchParams }: SearchParamProps) => {
     <>
       <section className="flex justify-center bg-primary-50 bg-dotted-pattern bg-contain">
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:max-w-7xl">
-          <Image
-            src={event.imageUrl}
-            alt="hero image"
-            width={1000}
-            height={1000}
-            className="h-full min-h-[300px] object-cover object-center"
-          />
+          <div className="relative h-full min-h-[300px] w-full bg-linear-to-br from-purple-400 via-pink-500 to-red-500">
+            {event.imageUrl ? (
+              <Image
+                src={event.imageUrl}
+                alt="hero image"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <Music className="h-24 w-24 text-white/80" aria-hidden="true" />
+              </div>
+            )}
+          </div>
 
           <div className="flex w-full flex-col gap-8 p-5 md:p-10">
             <div className="flex flex-col gap-6">

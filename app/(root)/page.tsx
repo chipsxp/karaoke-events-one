@@ -1,4 +1,6 @@
 import CategoryFilter from "@/components/toptemp/CategoryFilter";
+import DateRangeFilter from "@/components/toptemp/DateRangeFilter";
+import PriceFilter from "@/components/toptemp/PriceFilter";
 import Collection from "@/components/toptemp/Collection";
 import Search from "@/components/toptemp/Search";
 import HeroButtons from "@/components/toptemp/HeroButtons";
@@ -16,12 +18,18 @@ export default async function Home({
   const page = Number(params?.page) || 1;
   const searchText = (params?.query as string) || "";
   const category = (params?.category as string) || "";
+  const startDate = (params?.startDate as string) || "";
+  const endDate = (params?.endDate as string) || "";
+  const priceType = (params?.price as string) || "";
 
   const events = await getAllEvents({
     query: searchText,
     category,
     page,
     limit: 8,
+    startDate,
+    endDate,
+    priceType,
   });
 
   return (
@@ -111,12 +119,22 @@ export default async function Home({
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-5 md:flex-row">
-          <div className="flex-1">
-            <Search query={searchText} />
+        <div className="flex w-full flex-col gap-5">
+          <div className="flex flex-col gap-5 md:flex-row">
+            <div className="flex-1">
+              <Search query={searchText} />
+            </div>
+            <div className="w-full md:w-64">
+              <CategoryFilter />
+            </div>
           </div>
-          <div className="w-full md:w-64">
-            <CategoryFilter />
+          <div className="flex flex-col gap-5 md:flex-row">
+            <div className="flex-1">
+              <DateRangeFilter />
+            </div>
+            <div className="w-full md:w-64">
+              <PriceFilter />
+            </div>
           </div>
         </div>
 

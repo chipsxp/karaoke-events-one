@@ -164,6 +164,9 @@ export async function getAllEvents({
   limit = 6,
   page,
   category,
+  startDate,
+  endDate,
+  priceType,
 }: GetAllEventsParams) {
   try {
     await connectToDatabase();
@@ -174,7 +177,7 @@ export async function getAllEvents({
     const categoryCondition = category
       ? await getCategoryByName(category)
       : null;
-    const conditions = {
+    const conditions: any = {
       $and: [
         titleCondition,
         categoryCondition ? { category: categoryCondition._id } : {},
@@ -183,9 +186,38 @@ export async function getAllEvents({
       ],
     };
 
+    // Date range filter
+    if (startDate || endDate) {
+      const dateCondition: any = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        if (!isNaN(start.getTime())) {
+          dateCondition.$gte = start;
+        }
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        if (!isNaN(end.getTime())) {
+          dateCondition.$lte = end;
+        }
+      }
+      if (Object.keys(dateCondition).length > 0) {
+        conditions.$and.push({ startDateTime: dateCondition });
+      }
+    }
+
+    // Price filter
+    if (priceType) {
+      if (priceType === 'free') {
+        conditions.$and.push({ isFree: true });
+      } else if (priceType === 'paid') {
+        conditions.$and.push({ isFree: false });
+      }
+    }
+
     const skipAmount = (Number(page) - 1) * limit;
     const eventsQuery = Event.find(conditions)
-      .sort({ createdAt: "desc" })
+      .sort({ startDateTime: "asc" })
       .skip(skipAmount)
       .limit(limit);
 

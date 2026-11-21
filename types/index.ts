@@ -255,6 +255,9 @@ export type GetAllEventsParams = {
   category: string;
   limit: number;
   page: number;
+  startDate?: string;
+  endDate?: string;
+  priceType?: string;
 };
 
 export type GetEventsByUserParams = {

@@ -114,7 +114,6 @@ export async function seedDemoData() {
 
   const common = {
     description: "Demo event seeded for Railway deployment testing. Sign up, grab a ticket, and the KJ will see you in the approval queue!",
-    imageUrl: "",
     category: category._id,
     kj: kj._id,
     promoter: promoter._id,
@@ -133,6 +132,7 @@ export async function seedDemoData() {
 
   const freeEvent = await upsertEvent({
     ...common,
+    imageUrl: "/images/party-event.jpg",
     title: "Friday Night Karaoke (Demo · Free)",
     startDateTime: new Date(now + 2 * day),
     endDateTime: new Date(now + 2 * day + 4 * 60 * 60 * 1000),
@@ -145,6 +145,7 @@ export async function seedDemoData() {
 
   const paidEvent = await upsertEvent({
     ...common,
+    imageUrl: "/images/hero.jpg",
     title: "Saturday Showdown (Demo · $10 ticket)",
     startDateTime: new Date(now + 3 * day),
     endDateTime: new Date(now + 3 * day + 5 * 60 * 60 * 1000),
@@ -157,6 +158,7 @@ export async function seedDemoData() {
 
   const autoEvent = await upsertEvent({
     ...common,
+    imageUrl: "/images/star-fling_crowd_cheering.png",
     title: "Weekend Warm-up (Demo · Auto-approve)",
     startDateTime: new Date(now + 1 * day),
     endDateTime: new Date(now + 1 * day + 3 * 60 * 60 * 1000),

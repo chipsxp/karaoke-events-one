@@ -1,6 +1,8 @@
 import Footer from "@/components/toptemp/Footer";
 import Header from "@/components/toptemp/Header";
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: {
