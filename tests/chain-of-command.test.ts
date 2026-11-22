@@ -106,6 +106,8 @@ async function main() {
   const promoDash = await dashActions.getPromoterDashboardData("clerk_promo");
   assert(promoDash?.totalVenues === 1 && promoDash?.totalEventsAtVenues === 1 && promoDash?.upcomingEventsAtVenues === 1, "Promoter dashboard stats correct");
 
+  const mongoose = (await import("mongoose")).default;
+  await mongoose.disconnect();
   await mongod.stop();
   if (failures > 0) { console.error(`\n${failures} assertion(s) FAILED`); process.exit(1); }
   console.log("\nALL CHAIN-OF-COMMAND ASSERTIONS PASSED");

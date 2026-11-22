@@ -66,6 +66,8 @@ async function main() {
   ]);
   assert(cleared.removedUsers === 3 && u3 === 0 && e3 === 0 && v3 === 0 && r3 === 0 && o3 === 0 && n3 === 0, "all demo data removed cleanly");
 
+  const mongoose = (await import("mongoose")).default;
+  await mongoose.disconnect();
   await mongod.stop();
   if (failures > 0) { console.error(`\n${failures} assertion(s) FAILED`); process.exit(1); }
   console.log("\nALL SEED ASSERTIONS PASSED");
