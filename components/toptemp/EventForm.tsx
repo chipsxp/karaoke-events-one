@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 
-import { useUploadThing } from "@/utils/uploadthing";
 import { Checkbox } from "../ui/checkbox";
 import { useRouter } from "next/navigation";
 import { createEvent, updateEvent } from "@/lib/actions/event.actions";
@@ -43,7 +42,6 @@ type EventFormProps = {
 };
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
-  const [files, setFiles] = useState<File[]>([]);
   // Promoter-owned venues the KJ can pick as the event location (Phase 1)
   const [venues, setVenues] = useState<
     { _id: string; name: string; address: string }[]
@@ -89,25 +87,13 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         };
   const router = useRouter();
 
-  const { startUpload } = useUploadThing("imageUploader");
-
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues,
   });
 
   const onSubmit: SubmitHandler<z.infer<typeof eventFormSchema>> = async (values) => {
-    let uploadedImageUrl = values.imageUrl;
-
-    if (files.length > 0) {
-      const uploadedImages = await startUpload(files);
-
-      if (!uploadedImages) {
-        return;
-      }
-
-      uploadedImageUrl = uploadedImages[0].url;
-    }
+    const uploadedImageUrl = values.imageUrl;
 
     if (type === "Create") {
       try {
@@ -215,7 +201,6 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                   <FileUploader
                     onFieldChange={field.onChange}
                     imageUrl={field.value}
-                    setFiles={setFiles}
                   />
                 </FormControl>
                 <FormMessage />

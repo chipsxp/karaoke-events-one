@@ -18,7 +18,7 @@
 
 **Stack:** Next.js 16.4.6 (App Router, Turbopack) · React 19.2 · TypeScript 5.9 ·
 Tailwind CSS 4.1 · MongoDB + Mongoose 8.20 · Clerk 6 (auth) · Stripe 19 (payments) ·
-UploadThing 7 (image uploads) · shadcn/Radix UI · React Hook Form + Zod.
+react-dropzone image uploads (base64 → MongoDB) · shadcn/Radix UI · React Hook Form + Zod.
 
 The big Next 14 → 16 / Tailwind 3 → 4 upgrade (commit `9695d71`) is **done and stable**.
 
@@ -66,8 +66,8 @@ The plumbing for your intended model is **half-built and mislabeled**:
    venue↔promoter linkage beyond a `venues: [String]` array of names (no
    addresses, no geo).
 4. **Broken role plumbing.** `RoleBasedNav.tsx` fetches `/api/user/role` —
-   **that route does not exist** (`app/api/` only has `uploadthing/` and
-   `webhook/`), so it silently renders nothing. `NavItems.tsx` fetches the role
+   **that route does not exist** (`app/api/` only has `webhook/` and
+   `dev/seed/`), so it silently renders nothing. `NavItems.tsx` fetches the role
    client-side, causing the empty-nav flash (issue #8).
 5. **Dashboards are uneven.** `KSDashboard` (425 lines) is real, with
    stats/events/tickets and 30-second polling. `KJDashboard` (79 lines) and
@@ -96,7 +96,7 @@ The plumbing for your intended model is **half-built and mislabeled**:
 | #7 | Med | 23 usages of dead Tailwind classes (`bg-grey-*`, `text-grey-*`, `filter-grey`, `bg-dark-3`) — theme only defines `gray-*` → unstyled elements. |
 | #8 | Med | Header nav flashes empty while role loads; desktop overflow risk. |
 | #9 | Med | Event-card Edit/Delete are hover-only `opacity-0` → unreachable on touch devices. |
-| #3 | Low | 4 high npm-audit vulns in the `uploadthing`/`effect` chain. |
+| #3 | Low | ~~4 high npm-audit vulns in the `uploadthing`/`effect` chain.~~ **Resolved** — UploadThing removed entirely; uploads now use react-dropzone + a server action storing base64 images in MongoDB. |
 
 ---
 
@@ -122,7 +122,7 @@ The plumbing for your intended model is **half-built and mislabeled**:
    lucide-react), #8 (resolve nav links **server-side** from the DB user role —
    delete the client fetch and the nonexistent `/api/user/role` pattern),
    #2 (error boundary + graceful header fallback), #9 (always-visible controls
-   on touch), #3 (upgrade uploadthing chain).
+   on touch), #3 (resolved — uploadthing removed).
 
 ### Phase 1 — Role & Chain-of-Command Correction (the core fix)
 1. **Canonical vocabulary** everywhere (code + UI): Promoter = Venue

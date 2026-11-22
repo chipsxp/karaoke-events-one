@@ -83,7 +83,7 @@ Our MongoDB implementation follows **domain-driven design** principles with care
 - **XSS protection** with React's built-in escaping
 - **CSRF protection** with double-submit cookies
 - **Rate limiting** on API endpoints
-- **File upload security** through UploadThing validation
+- **File upload security** via server-action validation (MIME allowlist + 4MB size cap)
 
 ## 💳 Payment Processing Architecture
 
@@ -140,7 +140,7 @@ components/
 
 ### Image Optimization
 - **Next.js Image component** with automatic optimization
-- **UploadThing integration** for efficient file handling
+- **react-dropzone uploads** with server-action validation (base64 stored in MongoDB)
 - **Responsive images** with srcset and sizes attributes
 - **Lazy loading** with blur-up placeholders
 
@@ -292,7 +292,6 @@ interface SearchFilters {
 - MongoDB 6.x or higher
 - Clerk account for authentication
 - Stripe account for payments
-- UploadThing account for file storage
 
 ### Installation
 ```bash
@@ -319,8 +318,6 @@ MONGODB_URI=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-UPLOADTHING_SECRET=
-UPLOADTHING_APP_ID=
 NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 ```
 
@@ -343,8 +340,9 @@ To actually see the app running locally:
    to a local MongoDB instance or a free MongoDB Atlas cluster. Without it,
    event-listing pages degrade to an empty state rather than crashing (see
    issue #5) but will show no data.
-3. Stripe/UploadThing keys are only required to actually complete a ticket
-   purchase or upload an event image -- browsing works without them.
+3. Stripe keys are only required to actually complete a ticket purchase --
+   browsing works without them. Image uploads need no external service:
+   they are validated server-side and stored as base64 data URLs in MongoDB.
 
 ### Known issues from initial investigation
 The following were found while auditing commit `9695d716b0bbb411ef3c271547af4aacdb666e1b`

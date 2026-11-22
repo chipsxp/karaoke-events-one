@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-22",
+  "topic": "UploadThing replaced with self-hosted react-dropzone uploads",
+  "why": [
+    "KJ image upload crashed with coerceError (unhandled rejection) — UPLOADTHING_SECRET/APP_ID were never set in .env.local, so the UT route handler failed to init",
+    "Phase 0 journal already flagged uploadthing as untested + 4 high npm-audit vulns in uploadthing/effect chain (issue #3)",
+    "Decision: remove external service entirely; no extra keys needed"
+  ],
+  "architecture": {
+    "flow": "browser FileReader -> base64 data URL -> uploadImage server action -> stored directly in Event.imageUrl (plain String, mongoose)",
+    "server_action": "lib/actions/upload.actions.ts uploadImage(dataUrl): Clerk auth() gate, validates data:<mime>;base64 format, MIME allowlist jpeg/png/webp/gif, 4MB cap computed as floor(base64len * 0.75), returns {url} or {url:'', error}",
+    "client": "components/toptemp/FileUploader.tsx rewritten on react-dropzone (was already a dep, v14.3.8); props {onFieldChange, imageUrl}; preview + X remove button, drag-active/uploading states, inline error pill",
+    "form": "components/toptemp/EventForm.tsx: useUploadThing/files/startUpload removed; onSubmit passes values.imageUrl directly",
+    "deleted": ["app/api/uploadthing/core.ts", "app/api/uploadthing/route.ts", "utils/uploadthing.ts"],
+    "packages_removed": ["uploadthing", "@uploadthing/react"],
+    "package_json_overrides": "emptied to {} (effect/@effect/platform pins existed only for uploadthing vuln chain)"
+  },
+  "tradeoffs": [
+    "base64 inflates ~33%; 4MB cap keeps Mongo docs reasonable",
+    "event-detail page has image fallback (commit 3999356); Next Image needs data: URLs handled — page uses fallback-capable render",
+    "future: could move to disk/S3 storage if image sizes grow"
+  ],
+  "docs_updated": [".env.example", "README.md", "docs/STATUS_REPORT_AND_PLAN.md (issue #3 marked resolved)"],
+  "verify": "npm run build passes; manual test: as KJ create event -> drag ~60KB image -> preview shows -> event saves with image"
+}

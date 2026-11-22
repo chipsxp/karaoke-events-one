@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-22",
+  "topic": "Frontend design fixes - search input, calendar popover, spacing",
+  "findings": [
+    {
+      "file": "components/toptemp/Search.tsx",
+      "issue": "Input text used text-gray-100 (nearly white) on a white background; clear button also text-gray-100",
+      "fix": "Changed input to text-gray-800, placeholder gray-400, clear button gray-400 hover gray-600"
+    },
+    {
+      "file": "components/toptemp/DateRangeFilter.tsx",
+      "issue": "PopoverContent had w-auto p-0 with no height constraint; Calendar component defaults to full-height flex column which stretched the dropdown",
+      "fix": "Added max-h-[420px] overflow-y-auto, p-2, rounded-2xl, shadow-xl, sideOffset=8 to PopoverContent; passed bg-white rounded-xl to Calendar"
+    },
+    {
+      "file": "app/(root)/page.tsx",
+      "issue": "Filter controls (Search, CategoryFilter, DateRangeFilter, PriceFilter) had no visual grouping; sections lacked horizontal padding separation",
+      "fix": "Wrapped filter grid in a rounded-2xl glass card (bg-white/10 border-2 border-white/20 backdrop-blur-sm p-4 md:p-5); added px-5 md:px-10 to events and CTA sections"
+    }
+  ],
+  "design_tokens": {
+    "primary_purple": "#624cf5 (var(--color-primary-500))",
+    "font": "Poppins via var(--font-poppins)",
+    "globals_css_location": "app/globals.css - SHADCN OVERRIDES section",
+    "calendar_styles": "REACT-DATEPICKER STYLES section also exists in globals.css (legacy, for react-datepicker library)"
+  },
+  "components_touched": [
+    "Search.tsx",
+    "DateRangeFilter.tsx",
+    "app/(root)/page.tsx"
+  ],
+  "next_steps": [
+    "Verify in browser at http://localhost:3000",
+    "Check CategoryFilter and PriceFilter dropdowns render correctly inside new glass card"
+  ]
+}
