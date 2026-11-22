@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { DeleteConfirmation } from "./DeleteConfirmation";
 import EditEventButton from "./EditEventButton";
-import { Calendar, MapPin, Users, Music, ShieldCheck } from "lucide-react";
+import { Calendar, MapPin, Users, Music, ShieldCheck, Star } from "lucide-react";
+import { getUserRatingSummary } from "@/lib/actions/rating.actions";
 
 type CardProps = {
   event: IEvent;
@@ -29,6 +30,10 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
 
   const isEventCreator =
     Boolean(userId) && userId === event.kj?._id?.toString();
+
+  const kjRating = event.kj?._id
+    ? await getUserRatingSummary(event.kj._id.toString())
+    : null;
 
   return (
     <div className="group relative flex min-h-[420px] w-full max-w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 dark:bg-gray-800">
@@ -143,8 +148,16 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
                   />
                 )}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                 KJ · Event Host
+                {kjRating && kjRating.count > 0 && (
+                  <span className="flex items-center gap-0.5">
+                    ·
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    <span>{kjRating.average}</span>
+                    <span className="text-gray-400 dark:text-gray-500">({kjRating.count})</span>
+                  </span>
+                )}
               </p>
             </div>
           </div>

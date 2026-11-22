@@ -117,47 +117,62 @@ export async function getKSDashboardData(ksClerkId: string) {
         interestedEvents: 0,
         attendedEvents: 0,
         upcomingRegistrations: [],
+        ticketRegistrations: [],
       };
     }
 
-    const [registeredEvents, interestedEvents, attendedEvents, upcomingRegistrations] =
-      await Promise.all([
-        EventRegistration.countDocuments({
-          userId: ks._id,
-          registrationType: "registered",
-          status: { $in: ["approved", "pending", "attended"] },
-        }),
-        EventRegistration.countDocuments({
-          userId: ks._id,
-          registrationType: "interested",
-        }),
-        EventRegistration.countDocuments({
-          userId: ks._id,
-          status: "attended",
-        }),
-        EventRegistration.find({
-          userId: ks._id,
-          registrationType: "registered",
-          status: { $in: ["approved", "pending"] },
-        })
-          .populate({
-            path: "eventId",
-            model: Event,
-            populate: [
-              { path: "category", model: "Category", select: "name" },
-              { path: "kj", model: "User", select: "firstName lastName" },
-              { path: "venue", model: "Venue", select: "name address" },
-            ],
-          })
-          .sort({ createdAt: -1 })
-          .limit(5),
-      ]);
+    const eventPopulate = {
+      path: "eventId",
+      model: Event,
+      populate: [
+        { path: "category", model: "Category", select: "name" },
+        { path: "kj", model: "User", select: "firstName lastName" },
+        { path: "venue", model: "Venue", select: "name address" },
+      ],
+    };
+
+    const [
+      registeredEvents,
+      interestedEvents,
+      attendedEvents,
+      upcomingRegistrations,
+      ticketRegistrations,
+    ] = await Promise.all([
+      EventRegistration.countDocuments({
+        userId: ks._id,
+        registrationType: "registered",
+        status: { $in: ["approved", "pending", "attended"] },
+      }),
+      EventRegistration.countDocuments({
+        userId: ks._id,
+        registrationType: "interested",
+      }),
+      EventRegistration.countDocuments({
+        userId: ks._id,
+        status: "attended",
+      }),
+      EventRegistration.find({
+        userId: ks._id,
+        registrationType: "registered",
+        status: { $in: ["approved", "pending"] },
+      })
+        .populate(eventPopulate)
+        .sort({ createdAt: -1 })
+        .limit(5),
+      // Full ticket lifecycle: every registration regardless of status so the
+      // KS dashboard can surface pending/approved/rejected/interested states.
+      EventRegistration.find({ userId: ks._id })
+        .populate(eventPopulate)
+        .sort({ createdAt: -1 })
+        .limit(10),
+    ]);
 
     return {
       registeredEvents,
       interestedEvents,
       attendedEvents,
       upcomingRegistrations: JSON.parse(JSON.stringify(upcomingRegistrations)),
+      ticketRegistrations: JSON.parse(JSON.stringify(ticketRegistrations)),
     };
   } catch (error) {
     handleError(error);

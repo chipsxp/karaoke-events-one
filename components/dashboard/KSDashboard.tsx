@@ -24,7 +24,11 @@ import {
   CalendarCheck,
   Crown,
   Users,
-  Clock
+  Clock,
+  Ticket,
+  CheckCircle2,
+  XCircle,
+  Hourglass
 } from "lucide-react"
 import Link from "next/link"
 import { getKSDashboardData } from "@/lib/actions/dashboard.actions"
@@ -62,6 +66,49 @@ interface RecentEvent {
   attended: boolean
   rating?: number
   hostRating?: number
+}
+
+type TicketStatus = 'interested' | 'pending' | 'approved' | 'rejected' | 'attended'
+
+interface TicketRegistration {
+  _id: string
+  status: TicketStatus
+  registrationType: 'interested' | 'registered'
+  title: string
+  startDateTime: string
+  venue: string
+}
+
+const ticketStatusConfig: Record<TicketStatus, {
+  label: string
+  icon: any
+  className: string
+}> = {
+  pending: {
+    label: 'Pending Approval',
+    icon: Hourglass,
+    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  },
+  approved: {
+    label: 'Approved ✓',
+    icon: CheckCircle2,
+    className: 'bg-green-100 text-green-800 border-green-200',
+  },
+  rejected: {
+    label: 'Not Approved',
+    icon: XCircle,
+    className: 'bg-red-100 text-red-800 border-red-200',
+  },
+  interested: {
+    label: 'Interested',
+    icon: Heart,
+    className: 'bg-blue-100 text-blue-800 border-blue-200',
+  },
+  attended: {
+    label: 'Attended',
+    icon: Trophy,
+    className: 'bg-green-700 text-white border-green-800',
+  },
 }
 
 const Progress = ({ value, className, color = "purple" }: { value: number; className?: string; color?: string }) => (
@@ -120,6 +167,7 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
   })
 
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([])
+  const [ticketRegistrations, setTicketRegistrations] = useState<TicketRegistration[]>([])
 
   // Phase 1: load real data from the server actions instead of demo values
   useEffect(() => {
@@ -154,6 +202,21 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
             attended: r.status === "attended",
           }))
         )
+        const tickets: any[] = Array.isArray(data.ticketRegistrations)
+          ? data.ticketRegistrations
+          : []
+        setTicketRegistrations(
+          tickets
+            .filter((r) => r?.eventId)
+            .map((r) => ({
+              _id: r._id,
+              status: (r.status || 'pending') as TicketStatus,
+              registrationType: r.registrationType,
+              title: r.eventId?.title || "Event",
+              startDateTime: r.eventId?.startDateTime || "",
+              venue: r.eventId?.venue?.name || r.eventId?.location || "",
+            }))
+        )
       } catch (error) {
         console.error("Failed to load KS dashboard data:", error)
       }
@@ -176,7 +239,6 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
     }
   }
 
-  const getStatusColor = (attended: boolean) => attended ? 'green' : 'yellow'
   const getStatusText = (attended: boolean) => attended ? 'Attended' : 'Upcoming'
 
   return (
@@ -341,6 +403,76 @@ export default function KSDashboard({ userId }: KSDashboardProps) {
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
       `}</style>
+
+        {/* My Tickets — registration lifecycle (pending → approved/rejected) */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center">
+              <Ticket className="w-8 h-8 mr-3 text-purple-600" />
+              My Tickets
+            </h2>
+            <Link href="/orders">
+              <Button variant="outline" className="border-purple-500 text-purple-600 hover:bg-purple-50">
+                View All Tickets
+              </Button>
+            </Link>
+          </div>
+
+          <Card className="bg-white border-2 border-purple-100">
+            <CardContent className="p-0">
+              {ticketRegistrations.length === 0 ? (
+                <div className="text-center py-10">
+                  <Ticket className="w-10 h-10 mx-auto text-purple-300 mb-3" />
+                  <p className="text-gray-500">No ticket registrations yet — browse events to get started!</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {ticketRegistrations.map((ticket) => {
+                    const status = ticketStatusConfig[ticket.status] ?? ticketStatusConfig.pending
+                    const StatusIcon = status.icon
+                    return (
+                      <div
+                        key={ticket._id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 hover:bg-purple-50/50 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-gray-800 truncate">{ticket.title}</h3>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                            {ticket.startDateTime && (
+                              <span className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-1 text-purple-500" />
+                                {new Date(ticket.startDateTime).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            )}
+                            {ticket.venue && (
+                              <span className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-1 text-purple-500" />
+                                {ticket.venue}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`${status.className} shrink-0 px-3 py-1`}
+                        >
+                          <StatusIcon className="w-3.5 h-3.5 mr-1" />
+                          {status.label}
+                        </Badge>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Recent Events Section */}
         <div className="mb-8">

@@ -71,6 +71,27 @@ export async function getUserRating(userId: string) {
   }
 }
 
+export async function getUserRatingSummary(userId: string) {
+  try {
+    await connectToDatabase();
+
+    const [result] = await Rating.aggregate([
+      { $match: { rateeId: userId } },
+      { $group: { _id: null, average: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]);
+
+    if (!result || result.count === 0) return { average: 0, count: 0 };
+
+    return {
+      average: Math.round(result.average * 10) / 10,
+      count: result.count
+    };
+  } catch (error) {
+    handleError(error);
+    return { average: 0, count: 0 };
+  }
+}
+
 export async function getEventRatings(eventId: string) {
   try {
     await connectToDatabase();
