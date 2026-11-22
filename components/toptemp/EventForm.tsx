@@ -400,7 +400,11 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                       type="number"
                       placeholder="Capacity"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      value={Number.isNaN(field.value) ? "" : field.value}
+                      onChange={(e) => {
+                        const parsed = parseInt(e.target.value, 10);
+                        field.onChange(Number.isNaN(parsed) ? 0 : parsed);
+                      }}
                       className="p-regular-16 border-0 bg-gray-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
