@@ -64,13 +64,13 @@ const Search = ({ query: initialQuery = '', placeholder = 'Search events...' }: 
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className="flex-1 border-0 bg-transparent outline-offset-0 placeholder:text-gray-400 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-100 pr-10"
+        className="flex-1 border-0 bg-transparent text-gray-800 placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 pr-10"
       />
 
       {query && (
         <button
           onClick={clearSearch}
-          className="absolute right-3 p-1 text-gray-100 hover:text-gray-400 transition-colors"
+          className="absolute right-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
           aria-label="Clear search"
         >
           <X className="h-4 w-4" />

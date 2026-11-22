@@ -107,7 +107,7 @@ export default async function Home({
       {/* Events Section */}
       <section
         id="events"
-        className="wrapper my-12 flex flex-col gap-8 rounded-3xl bg-linear-to-br from-pink-600 via-purple-600 to-yellow-600 py-20 md:py-32"
+        className="wrapper my-12 flex flex-col gap-10 rounded-3xl bg-linear-to-br from-pink-600 via-purple-600 to-yellow-600 px-5 py-20 md:px-10 md:py-32"
       >
         <div className="text-center">
           <h2 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -120,20 +120,22 @@ export default async function Home({
         </div>
 
         <div className="flex w-full flex-col gap-5">
-          <div className="flex flex-col gap-5 md:flex-row">
-            <div className="flex-1">
-              <Search query={searchText} />
+          <div className="rounded-2xl border-2 border-white/20 bg-white/10 p-4 backdrop-blur-sm md:p-5">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="flex-1">
+                <Search query={searchText} />
+              </div>
+              <div className="w-full md:w-64">
+                <CategoryFilter />
+              </div>
             </div>
-            <div className="w-full md:w-64">
-              <CategoryFilter />
-            </div>
-          </div>
-          <div className="flex flex-col gap-5 md:flex-row">
-            <div className="flex-1">
-              <DateRangeFilter />
-            </div>
-            <div className="w-full md:w-64">
-              <PriceFilter />
+            <div className="mt-4 flex flex-col gap-4 md:flex-row">
+              <div className="flex-1">
+                <DateRangeFilter />
+              </div>
+              <div className="w-full md:w-64">
+                <PriceFilter />
+              </div>
             </div>
           </div>
         </div>
@@ -150,7 +152,7 @@ export default async function Home({
       </section>
 
       {/* CTA Section */}
-      <section className="wrapper bg-linear-to-r from-purple-600 to-pink-600 py-20 rounded-3xl my-12">
+      <section className="wrapper my-12 rounded-3xl bg-linear-to-r from-purple-600 to-pink-600 px-5 py-20 md:px-10">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
             Ready to Host Your Own Event?

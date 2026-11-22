@@ -107,13 +107,18 @@ const DateRangeFilter = () => {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent
+          className="w-auto max-h-[420px] overflow-y-auto rounded-2xl border-gray-200 bg-white p-2 shadow-xl"
+          align="start"
+          sideOffset={8}
+        >
           <Calendar
             mode="range"
             defaultMonth={date?.from}
             selected={date}
             onSelect={onSelectRange}
             numberOfMonths={2}
+            className="rounded-xl bg-white"
           />
         </PopoverContent>
       </Popover>
